@@ -329,6 +329,253 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #f9f9f9;
+    border-right: 1px solid #eee;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    animation: slideRight 0.3s ease-out;
+}
+
+@keyframes slideRight {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+.sidebarHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebarTitle {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.newChatBtn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.newChatBtn:hover {
+    background-color: #333;
+}
+
+.sessionList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sessionItem {
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #fff;
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sessionItem:hover {
+    border-color: #ccc;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.sessionActive {
+    border-color: #000;
+    background-color: #fafafa;
+}
+
+.sessionItemContent {
+    overflow: hidden;
+}
+
+.sessionItemTitle {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sessionItemTime {
+    font-size: 10px;
+    color: #888;
+}
+
+.deleteSessionBtn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.sessionItem:hover .deleteSessionBtn {
+    opacity: 1;
+}
+
+.deleteSessionBtn:hover {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.sessionLoading,
+.sessionEmpty {
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: #888;
+}
+
+.emptyChat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    padding: 0 20px;
+}
+
+.emptyChat p {
+    margin-bottom: 8px;
+}
+
+.newChatBtnMain {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.2s;
+}
+
+.newChatBtnMain:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+.iconBtn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.iconBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sessionBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #eee;
+    color: #555;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.typingDots {
+    display: inline-flex;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.typingDots span {
+    width: 4px;
+    height: 4px;
+    background-color: #888;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typingDots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typingDots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
 @media (max-width: 480px) {
     .window {
         width: 100vw;
@@ -336,5 +583,10 @@
         bottom: 0;
         right: 0;
         border-radius: 0;
+    }
+
+    .sidebar {
+        width: 80%;
+        max-width: 300px;
     }
 }

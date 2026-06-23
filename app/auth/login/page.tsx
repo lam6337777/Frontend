@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/redux/hooks';
 import { loginUser, clearError } from '@/store/redux/authSlice';
 import { Eye, EyeOff } from 'lucide-react';
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +23,8 @@ export default function LoginPage() {
     const resultAction = await dispatch(loginUser({ email, password }));
     if (loginUser.fulfilled.match(resultAction)) {
       sessionStorage.setItem('justLoggedIn', 'true');
-      router.push('/');
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     }
   };
 

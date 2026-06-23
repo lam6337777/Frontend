@@ -89,8 +89,11 @@ const Navbar = () => {
     }, [isAuthenticated, dispatch]);
 
     const handleLogout = () => {
-        dispatch(logout());
-        dispatch(clearCart()); // Xóa cart khỏi Redux + sessionStorage khi đăng xuất
+        router.push('/');
+        setTimeout(() => {
+            dispatch(logout());
+            dispatch(clearCart()); // Xóa cart khỏi Redux + sessionStorage khi đăng xuất
+        }, 100);
     };
     
     const handleSearch = (e: React.FormEvent) => {

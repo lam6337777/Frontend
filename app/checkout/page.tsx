@@ -74,9 +74,9 @@ export default function CheckoutPage() {
 
         try {
             // 1. Đồng bộ giỏ hàng lên server trước
-            await cartService.clearCart(); // Xóa sạch giỏ cũ trên server
-            for (const item of items) {
-                await cartService.addToCart({
+            await cartService.clearCart(); // Xóa sạch giỏ cũ trên server vì khách có thẻ thay đổi số lượng
+            for (const item of items) { // lấy danh sách sản phẩm từ redux
+                await cartService.addToCart({ // Thêm từng sản phẩm vào giỏ hàng trên server
                     variantId: item.variantId,
                     quantity: item.quantity
                 });

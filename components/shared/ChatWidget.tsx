@@ -2,12 +2,24 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, User, Bot, Headset } from 'lucide-react';
+import Link from 'next/link';
+
+interface ProductSummary {
+  id: string | number;
+  name: string;
+  image_url?: string;
+  primaryImageUrl?: string;
+  price?: number;
+  sale_price?: number;
+  original_price?: number;
+}
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'bot';
   handoff?: boolean;
+  products?: ProductSummary[];
 }
 
 const ChatWidget = () => {
@@ -48,11 +60,28 @@ const ChatWidget = () => {
 
       const data = await response.json();
       
+      let extractedProducts: ProductSummary[] = [];
+      try {
+        let rawData = data.raw_data;
+        if (typeof rawData === 'string' && rawData.trim() !== '') {
+          rawData = JSON.parse(rawData);
+        }
+        
+        if (rawData && Array.isArray(rawData)) {
+          extractedProducts = rawData.filter((item: any) => item.id && item.name && (item.image_url || item.primaryImageUrl));
+        } else if (rawData && typeof rawData === 'object' && rawData.id) {
+          extractedProducts = [rawData];
+        }
+      } catch (e) {
+        console.error("Lỗi parse raw_data:", e);
+      }
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: data.text,
         sender: 'bot',
-        handoff: data.handoff
+        handoff: data.handoff,
+        products: extractedProducts.length > 0 ? extractedProducts : undefined
       };
 
       setMessages(prev => [...prev, botMessage]);
@@ -124,6 +153,26 @@ const ChatWidget = () => {
                       : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
                     }`}>
                       {msg.text}
+                      
+                      {msg.products && msg.products.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto py-2 mt-2 hide-scrollbar max-w-[280px]">
+                          {msg.products.map(product => {
+                            const imgUrl = product.image_url || product.primaryImageUrl || '/placeholder.png';
+                            const price = product.sale_price || product.price || product.original_price;
+                            return (
+                              <Link 
+                                key={product.id} 
+                                href={`/products/${product.id}`} 
+                                className="block border rounded-lg p-2 min-w-[130px] max-w-[130px] bg-white shadow-sm hover:shadow-md transition shrink-0 text-gray-800"
+                              >
+                                <img src={imgUrl} alt={product.name} className="w-full h-20 object-cover rounded-md mb-2" />
+                                <p className="text-xs font-semibold truncate" title={product.name}>{product.name}</p>
+                                {price && <p className="text-xs text-red-500 font-bold mt-1">{Number(price).toLocaleString('vi-VN')}đ</p>}
+                              </Link>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
                     {msg.handoff && (
                       <button 
@@ -139,13 +188,15 @@ const ChatWidget = () => {
               </div>
             ))}
             {isLoading && (
-              <div className="flex justify-start animate-pulse">
-                <div className="flex gap-2 max-w-[80%]">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+              <div className="flex justify-start">
+                <div className="flex gap-2 max-w-[80%] items-end">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
                     <Bot size={16} />
                   </div>
-                  <div className="bg-white p-3 rounded-2xl text-sm border border-gray-100 italic text-gray-400">
-                    Đang nhập...
+                  <div className="bg-white px-4 py-3 rounded-2xl border border-gray-100 flex gap-1 items-center rounded-tl-none shadow-sm">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                   </div>
                 </div>
               </div>

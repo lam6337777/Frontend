@@ -65,6 +65,7 @@ export default function Home() {
                     salePrice={product.salePrice}
                     image={primaryImage}
                     label="NEW"
+                    variants={product.variants}
                   />
                 );
               })
@@ -100,6 +101,7 @@ export default function Home() {
                     price={product.originalPrice}
                     salePrice={product.salePrice}
                     image={primaryImage}
+                    variants={product.variants}
                   />
                 );
               })

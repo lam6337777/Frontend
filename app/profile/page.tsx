@@ -200,11 +200,13 @@ export default function ProfilePage() {
 
 
     const handleLogout = () => {
-        setProfileForm({ fullName: '', phone: '' });
-        setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
-        dispatch(logout());
-        dispatch(clearCart());
         router.push('/');
+        setTimeout(() => {
+            setProfileForm({ fullName: '', phone: '' });
+            setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+            dispatch(logout());
+            dispatch(clearCart());
+        }, 100);
     };
 
     const handleOpenReviewModal = (item: any, orderId: number) => {

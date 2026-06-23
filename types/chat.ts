@@ -7,6 +7,8 @@ export interface ChatMessage {
     content: string;
     isRead: boolean;
     createdAt: string;
+    rawData?: any[];
+    handoff?: boolean;
 }
 
 export interface SendMessageRequest {

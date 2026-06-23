@@ -152,6 +152,7 @@ function ProductsContent() {
                                     brand={product.brandName}
                                     image={primaryImage}
                                     label={product.isFeatured ? 'FEATURED' : undefined}
+                                    variants={product.variants}
                                 />
                             );
                         })}
