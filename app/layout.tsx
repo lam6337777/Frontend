@@ -1,36 +1,46 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import Navbar from "@/components/layout/Navbar/Navbar";
-import { StoreProvider } from "@/store/redux/Provider";
-import ChatWidget from "@/components/shared/ChatWidget/ChatWidget";
+import type { Metadata, Viewport } from 'next';
+import { Be_Vietnam_Pro } from 'next/font/google';
+import './globals.css';
+import { StoreProvider } from '@/store/redux/Provider';
+import { ToastProvider } from '@/components/ui/Toast';
+import { AuthBootstrap } from '@/components/layout/AuthBootstrap';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import ChatWidget from '@/components/shared/ChatWidget/ChatWidget';
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin", "vietnamese"],
+const beVietnam = Be_Vietnam_Pro({
+    variable: '--font-be-vietnam',
+    subsets: ['latin', 'vietnamese'],
+    weight: ['400', '500', '600', '700', '800'],
+    display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "PF. Shoes | Minimalist Footwear",
-  description: "Cửa hàng giày phong cách tối giản cao cấp.",
+    title: {
+        default: 'PF. Shoes — Giày thể thao chính hãng',
+        template: '%s | PF. Shoes',
+    },
+    description: 'Mua giày thể thao chính hãng, xem sản phẩm 3D, giao hàng toàn quốc, đổi trả trong 7 ngày.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="vi">
-      <body
-        className={`${inter.variable} antialiased`}
-      >
-        <StoreProvider>
-          <Navbar />
-          <main>{children}</main>
-          <ChatWidget />
-        </StoreProvider>
-      </body>
-    </html>
-  );
+export const viewport: Viewport = {
+    themeColor: '#0ea893',
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+    return (
+        <html lang="vi" className={beVietnam.variable}>
+            <body>
+                <StoreProvider>
+                    <ToastProvider>
+                        <AuthBootstrap />
+                        <Header />
+                        <main className="min-h-[60vh]">{children}</main>
+                        <Footer />
+                        <ChatWidget />
+                    </ToastProvider>
+                </StoreProvider>
+            </body>
+        </html>
+    );
 }

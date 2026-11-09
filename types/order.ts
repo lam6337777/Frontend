@@ -5,14 +5,24 @@ export enum OrderStatus {
     DELIVERED = 'DELIVERED',
     CANCELLED = 'CANCELLED',
     RETURN_REQUESTED = 'RETURN_REQUESTED',
-    RETURNED = 'RETURNED'
+    RETURNED = 'RETURNED',
+    PARTIALLY_RETURNED = 'PARTIALLY_RETURNED',
+    EXCHANGE_REQUESTED = 'EXCHANGE_REQUESTED',
+    EXCHANGED = 'EXCHANGED',
+    WARRANTY_REQUESTED = 'WARRANTY_REQUESTED',
+    WARRANTY_REPAIRING = 'WARRANTY_REPAIRING',
+    WARRANTY_COMPLETED = 'WARRANTY_COMPLETED',
 }
+
+export type PaymentMethod = 'COD' | 'VNPAY';
 
 export interface OrderRequest {
     shippingName: string;
     shippingPhone: string;
     shippingAddress: string;
-    paymentMethod: 'COD';
+    province: string;
+    voucherCode?: string;
+    paymentMethod: PaymentMethod;
     note?: string;
 }
 
@@ -24,7 +34,7 @@ export enum OrderItemStatus {
     EXCHANGED = 'EXCHANGED',
     WARRANTY_REQUESTED = 'WARRANTY_REQUESTED',
     WARRANTY_REPAIRING = 'WARRANTY_REPAIRING',
-    WARRANTY_COMPLETED = 'WARRANTY_COMPLETED'
+    WARRANTY_COMPLETED = 'WARRANTY_COMPLETED',
 }
 
 export interface OrderItemResponse {
@@ -41,28 +51,37 @@ export interface OrderItemResponse {
     isReviewed?: boolean;
 }
 
+export interface StatusHistory {
+    status: OrderStatus;
+    note: string | null;
+    createdAt: string;
+}
+
 export interface OrderResponse {
     id: number;
     orderCode: string;
     status: OrderStatus;
-    paymentMethod: 'COD';
+    paymentMethod: PaymentMethod;
     paymentStatus: string;
     subtotal: number;
     shippingFee: number;
+    discountAmount: number;
+    voucherCode: string | null;
     totalAmount: number;
     shippingName: string;
     shippingPhone: string;
     shippingAddress: string;
     note?: string;
     createdAt: string;
+    deliveredAt: string | null;
     items: OrderItemResponse[];
-
+    statusHistory: StatusHistory[];
 }
 
 export enum ReturnRequestType {
     RETURN = 'RETURN',
     EXCHANGE = 'EXCHANGE',
-    WARRANTY = 'WARRANTY'
+    WARRANTY = 'WARRANTY',
 }
 
 export interface ReturnRequestRequest {
@@ -78,7 +97,8 @@ export interface ReturnRequestResponse {
     orderCode: string;
     type: ReturnRequestType;
     reason: string;
-    status: string;
-    adminNote?: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    adminNote?: string | null;
     createdAt: string;
+    returnItems?: { id: number; productName: string; size: string; color: string; quantity: number }[];
 }

@@ -1,42 +1,165 @@
 @import "tailwindcss";
 
-:root {
-  /* Khôi phục Light Theme chuẩn Nike */
-  --background: #ffffff; 
-  --foreground: #0a0a0a; 
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --border: #e4e4e7;
-  --accent: #171717;
-  
-  /* Giữ lại Glassmorphism Tokens để tái sử dụng ở cục bộ */
-  --glass-bg: rgba(9, 9, 11, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/*
+ * PF. Shoes — hệ thống màu "tươi mát"
+ * - brand: xanh ngọc (teal/mint) cho hành động chính, liên kết, trạng thái chọn
+ * - coral: san hô cho giá giảm, badge khuyến mãi, đếm giỏ hàng
+ * - mint: nền trang ánh bạc hà nhẹ
+ * Luôn dùng các token này (bg-brand-500, text-coral-500, ...) thay vì mã hex.
+ */
+@theme {
+  --font-sans: var(--font-be-vietnam), ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #effcf9;
+  --color-brand-100: #c9f7ec;
+  --color-brand-200: #94eedb;
+  --color-brand-300: #57ddc5;
+  --color-brand-400: #26c4ab;
+  --color-brand-500: #0ea893;
+  --color-brand-600: #088777;
+  --color-brand-700: #0b6c61;
+  --color-brand-800: #0e564f;
+  --color-brand-900: #104842;
+
+  --color-coral-50: #fff3f1;
+  --color-coral-100: #ffe3df;
+  --color-coral-200: #ffccc4;
+  --color-coral-400: #ff8a7a;
+  --color-coral-500: #ff6552;
+  --color-coral-600: #ec4733;
+
+  --color-mint-50: #f4fbf9;
+  --color-mint-100: #e6f6f2;
+
+  --color-ink: #10231f;
+  --color-muted: #5f7471;
+  --color-line: #dfeae7;
+
+  --shadow-card: 0 1px 2px rgb(16 35 31 / 0.04), 0 4px 16px rgb(16 35 31 / 0.06);
+  --shadow-lift: 0 12px 32px -8px rgb(14 168 147 / 0.25), 0 4px 12px rgb(16 35 31 / 0.08);
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: rotate(-8deg) translateY(0);
+    }
+    50% {
+      transform: rotate(-6deg) translateY(-14px);
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: -400px 0;
+    }
+    to {
+      background-position: 400px 0;
+    }
+  }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  
-  /* Thay đổi font gia đình */
-  --font-sans: var(--font-inter);
-  
-  --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-mint-50);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  transition: var(--transition-normal);
-  min-height: 100vh;
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 24px;
+    }
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-mint-100) 0%, #f7fcfb 50%, var(--color-mint-100) 100%);
+    background-size: 800px 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 12px;
+  }
+
+  .input {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-brand-400);
+    box-shadow: 0 0 0 3px rgb(14 168 147 / 0.15);
+  }
+
+  .input[aria-invalid="true"] {
+    border-color: var(--color-coral-500);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

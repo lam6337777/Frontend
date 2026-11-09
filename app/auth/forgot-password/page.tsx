@@ -1,222 +1,106 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { MailCheck } from 'lucide-react';
 import { authService } from '@/services/authService';
-import styles from '../Auth.module.css';
+import { AuthShell, PasswordField } from '@/components/auth/AuthShell';
+import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/Toast';
+import { errorMessage } from '@/lib/utils';
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const router = useRouter();
+    const toast = useToast();
+    const [step, setStep] = useState<'email' | 'reset'>('email');
+    const [email, setEmail] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirm, setConfirm] = useState('');
+    const [show, setShow] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-  const router = useRouter();
+    const requestOtp = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            await authService.forgotPassword(email.trim());
+            setStep('reset');
+            toast('Đã gửi mã xác thực, vui lòng kiểm tra email');
+        } catch (err) {
+            setError(errorMessage(err, 'Không gửi được mã xác thực'));
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  // Xử lý gửi mã OTP qua email
-  const handleRequestOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setSuccessMessage(null);
+    const reset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        if (password !== confirm) return setError('Mật khẩu xác nhận không khớp');
+        setLoading(true);
+        try {
+            await authService.resetPassword({ email: email.trim(), otpCode: otpCode.trim(), newPassword: password });
+            toast('Đặt lại mật khẩu thành công, vui lòng đăng nhập');
+            router.push('/auth/login');
+        } catch (err) {
+            setError(errorMessage(err, 'Đặt lại mật khẩu thất bại'));
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    try {
-      const response = await authService.forgotPassword(email);
-      if (response.success) {
-        setIsOtpSent(true);
-        setSuccessMessage('Mã xác thực đã được gửi thành công. Vui lòng kiểm tra email!');
-      } else {
-        setError(response.message || 'Gửi mã xác thực thất bại.');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Đã xảy ra lỗi khi gửi yêu cầu.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Xử lý đặt lại mật khẩu mới
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    // Kiểm tra mật khẩu khớp
-    if (newPassword !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp.');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await authService.resetPassword({
-        email,
-        otpCode,
-        newPassword
-      });
-
-      if (response.success) {
-        setSuccessMessage('Đặt lại mật khẩu thành công! Đang chuyển hướng về trang Đăng nhập...');
-        // Chuyển hướng sau 3 giây
-        setTimeout(() => {
-          router.push('/auth/login');
-        }, 3000);
-      } else {
-        setError(response.message || 'Đặt lại mật khẩu thất bại.');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Đã xảy ra lỗi khi đặt lại mật khẩu.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className={styles.authPage}>
-      <div className={styles.imageSection}>
-        <Image 
-          src="/images/auth-bg.png" 
-          alt="Auth Background" 
-          fill 
-          priority
-        />
-        <div className={styles.imageOverlay} />
-      </div>
-      
-      <div className={styles.formSection}>
-        <div className={styles.formWrapper}>
-          <h2 className={styles.title}>Quên mật khẩu</h2>
-          <span className={styles.subtitle}>Khôi phục tài khoản của bạn</span>
-          
-          {successMessage && (
-            <div className={styles.error} style={{ backgroundColor: '#F6FFED', border: '1px solid #B7EB8F', color: '#389E0D', marginBottom: '1.5rem' }}>
-              {successMessage}
-            </div>
-          )}
-
-          {error && (
-            <div className={styles.error} style={{ marginBottom: '1.5rem' }}>
-              {error}
-            </div>
-          )}
-
-          {!isOtpSent ? (
-            // BƯỚC 1: NHẬP EMAIL ĐỂ GỬI MÃ OTP
-            <form className={styles.form} onSubmit={handleRequestOtp}>
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Địa chỉ Email</label>
-                <input
-                  type="email"
-                  required
-                  className={styles.input}
-                  placeholder="email@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={styles.submitBtn}
-              >
-                {isLoading ? 'Đang gửi...' : 'Gửi mã xác thực'}
-              </button>
-
-              <div className={styles.footer}>
-                <span>Nhớ mật khẩu?</span>
-                <Link href="/auth/login" className={styles.link}>
-                  Đăng nhập
+    return (
+        <AuthShell
+            title="Quên mật khẩu"
+            subtitle={step === 'email' ? 'Nhập email đã đăng ký, chúng tôi sẽ gửi mã xác thực' : `Nhập mã đã gửi tới ${email}`}
+        >
+            {step === 'email' ? (
+                <form onSubmit={requestOtp} className="space-y-4">
+                    <label className="block">
+                        <span className="mb-1.5 block text-sm font-medium">Email</span>
+                        <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+                    </label>
+                    {error && <p className="rounded-xl bg-coral-50 px-4 py-3 text-sm font-medium text-coral-600">{error}</p>}
+                    <Button type="submit" size="lg" className="w-full" loading={loading}>
+                        Gửi mã xác thực
+                    </Button>
+                </form>
+            ) : (
+                <form onSubmit={reset} className="space-y-4">
+                    <div className="flex items-center gap-3 rounded-2xl bg-brand-50 p-4 text-sm text-brand-800">
+                        <MailCheck className="h-5 w-5 shrink-0" /> Mã xác thực đã được gửi. Kiểm tra cả thư mục spam nếu chưa thấy.
+                    </div>
+                    <label className="block">
+                        <span className="mb-1.5 block text-sm font-medium">Mã xác thực (OTP)</span>
+                        <input
+                            className="input text-center font-mono text-lg tracking-[0.5em]"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value.replace(/\s/g, ''))}
+                            required
+                        />
+                    </label>
+                    <PasswordField label="Mật khẩu mới" value={password} onChange={setPassword} autoComplete="new-password" show={show} onToggle={() => setShow(!show)} />
+                    <PasswordField label="Nhập lại mật khẩu mới" value={confirm} onChange={setConfirm} autoComplete="new-password" show={show} onToggle={() => setShow(!show)} />
+                    {error && <p className="rounded-xl bg-coral-50 px-4 py-3 text-sm font-medium text-coral-600">{error}</p>}
+                    <Button type="submit" size="lg" className="w-full" loading={loading}>
+                        Đặt lại mật khẩu
+                    </Button>
+                    <button type="button" onClick={() => requestOtp()} className="w-full text-sm font-semibold text-brand-600 hover:underline" disabled={loading}>
+                        Gửi lại mã
+                    </button>
+                </form>
+            )}
+            <p className="mt-6 text-center text-sm text-muted">
+                <Link href="/auth/login" className="font-semibold text-brand-600 hover:underline">
+                    ← Quay lại đăng nhập
                 </Link>
-              </div>
-            </form>
-          ) : (
-            // BƯỚC 2: NHẬP MÃ OTP VÀ MẬT KHẨU MỚI
-            <form className={styles.form} onSubmit={handleResetPassword}>
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Địa chỉ Email</label>
-                <input
-                  type="email"
-                  disabled
-                  className={styles.input}
-                  value={email}
-                  style={{ backgroundColor: '#F5F5F5', color: '#737373', cursor: 'not-allowed' }}
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Mã xác thực OTP</label>
-                <input
-                  type="text"
-                  required
-                  maxLength={6}
-                  className={styles.input}
-                  placeholder="Mã OTP 6 số"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Mật khẩu mới</label>
-                <input
-                  type="password"
-                  required
-                  className={styles.input}
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Xác nhận mật khẩu mới</label>
-                <input
-                  type="password"
-                  required
-                  className={styles.input}
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={styles.submitBtn}
-              >
-                {isLoading ? 'Đang đặt lại...' : 'Xác nhận đặt lại'}
-              </button>
-
-              <div className={styles.footer}>
-                <span style={{ display: 'block', marginBottom: '0.5rem' }}>Không nhận được mã xác thực?</span>
-                <button 
-                  type="button" 
-                  onClick={handleRequestOtp} 
-                  disabled={isLoading}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  className={styles.link}
-                >
-                  Gửi lại mã
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+            </p>
+        </AuthShell>
+    );
 }

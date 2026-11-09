@@ -1,89 +1,41 @@
 # System Architecture & Design Principles
 
-## Color Palette (Monochrome Focus)
+## 1. Bảng màu "tươi mát" (Fresh Commerce)
 
-- **Primary Colors**:
-  - Background: `#FFFFFF` (Pure White)
-  - Foreground: `#000000` (Pure Black)
-- **Secondary / Effect Colors**:
-  - Hover / Active State: `#F5F5F5` (Light Gray) / `rgba(0,0,0,0.05)`
-  - Borders: `#E5E5E5` (Soft Gray)
-  - Subtext / Muted: `#737373` (Medium Gray)
-  - Accent / Contrast: `#171717` (Charcoal Black)
+Phong cách sàn thương mại điện tử, nền sáng, màu tươi. Token khai báo trong `@theme` của [`app/globals.css`](app/globals.css) và dùng qua class Tailwind.
+
+| Vai trò | Token / class | Dùng cho |
+|---|---|---|
+| Màu chính (xanh ngọc) | `brand-50 … brand-900` (`bg-brand-500`, `text-brand-600`) | Nút chính, liên kết, trạng thái đang chọn, badge "Mới" |
+| Màu nhấn (san hô) | `coral-50 … coral-600` | Giá giảm, % giảm, nút "Mua ngay", số đếm giỏ hàng, lỗi |
+| Nền trang | `mint-50`, `mint-100` | Nền body, nền ô ảnh, skeleton |
+| Chữ | `ink` (chính), `muted` (phụ) | Văn bản |
+| Viền | `line` | Border, đường chia |
+| Đổ bóng | `shadow-card`, `shadow-lift` | Thẻ, hover |
 
 ## Theme Rules
 
-- **Strict Mode**: Chỉ sử dụng tông màu đen, trắng và xám (Monochrome).
-- **No Dark Mode**: Không hỗ trợ chế độ Dark Mode của hệ thống. Ứng dụng luôn duy trì giao diện sáng tối giản.
-- **Interactions**: Sử dụng hiệu ứng `transition: all 0.2s ease-in-out` cho các trạng thái hover/active.
-- **Typography**: Ưu tiên các font chữ không chân (sans-serif) hiện đại để tạo cảm giác tinh tế.
-  ## 2. Hướng dẫn sử dụng
+- **Không hardcode mã màu** trong component; luôn dùng token ở trên.
+- **No Dark Mode**: Giao diện luôn ở chế độ sáng.
+- **Typography**: Font `Be Vietnam Pro` (hiển thị tiếng Việt tốt), khai báo trong `app/layout.tsx`.
+- **Interactions**: Hover nhẹ (đổi màu, nâng thẻ, `shadow-lift`); tôn trọng `prefers-reduced-motion` (đã tắt animation trong `globals.css`).
+- **Responsive bắt buộc**: Kiểm tra ở bề rộng 390px (điện thoại) — không có thanh cuộn ngang. Các grid có cột `1fr` phải dùng `minmax(0,1fr)` / `min-w-0` để ảnh lớn không làm tràn layout.
 
-  ### 2.1. Trong file CSS (`globals.css`)
-  Các biến này được khai báo trong `:root` (mặc định Light Mode) và `.dark` (Dark Mode).
+## 2. Hướng dẫn sử dụng
 
-  ```css
-  :root {
-    /* Functional */
-    --color-up: #00C087;
-    --color-down: #FF4D4F;
-    --color-warning: #F0B90B;
-    --color-primary: #1890FF;
+- Class tiện ích dùng chung trong `globals.css`: `container-page`, `card`, `skeleton`, `input`, `scrollbar-none`.
+- Component nền tảng trong `components/ui`: `Button`/`LinkButton`, `Modal`, `Toast` (`useToast`), `Rating`, `Price`, `misc.tsx` (Badge, Breadcrumb, QuantityInput, EmptyState, Pagination, SectionHeading).
+- Ghép class có điều kiện bằng `cn()` trong `lib/utils.ts`; định dạng tiền bằng `formatVND()`.
 
-    /* Light Mode */
-    --bg-primary: #FFFFFF;
-    --bg-secondary: #F5F5F5;
-    --text-primary: #141414;
-    --text-secondary: #8C8C8C;
-    --border-color: #E8E8E8;
-    --bg-hover: #f0f0f0; /* Ví dụ cho light mode */
-  }
+```tsx
+import { Button } from '@/components/ui/Button';
 
-  .dark {
-    /* Dark Mode */
-    --bg-primary: #0B0E11;
-    --bg-secondary: #1E2329;
-    --text-primary: #EAECEF;
-    --text-secondary: #848E9C;
-    --border-color: #323943;
-    --bg-hover: #2B3139;
-  }
-  ```
+<Button variant="coral" size="lg" loading={saving}>Mua ngay</Button>
+```
 
-  ### 2.2. Trong CSS Modules (`*.module.css`)
-  Luôn sử dụng biến CSS thay vì hardcode mã hex.
-
-  ```css
-  /* button.module.css */
-  .btnBuy {
-    background-color: var(--color-up);
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 4px;
-  }
-
-  .card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-  }
-  ```
-
-  ### 2.3. Trong Component React
-  Import và sử dụng thông qua đối tượng `styles`.
-
-  ```tsx
-  import styles from './Trade.module.css';
-
-  export default function TradeButton() {
-    return (
-      <button className={styles.btnBuy}>
-        Buy
-      </button>
-    );
-  }
-  ```
-  ### 2.4 Luôn phải responsive
+### 2.1 Xem sản phẩm 3D
+- Sản phẩm có `model3dUrl` (file `.glb`) sẽ hiện tab **Xem 3D** trên trang chi tiết (`components/product/Product3DViewer.tsx`, dùng `@google/model-viewer`).
+- Admin nhập link trong form sản phẩm. File mẫu: `/models/demo-shoe.glb` (© Shopify, CC BY 4.0 — giữ dòng ghi công ở Footer nếu còn dùng).
   ## 3. Cấu trúc dự án (Project Structure)
   Dự án được tổ chức theo mô hình Next.js App Router với các quy định cụ thể cho từng thư mục:
 
@@ -130,11 +82,11 @@
   - **Server Components**: Mặc định sử dụng Server Components. Chỉ sử dụng `'use client'` khi có tương tác người dùng (hooks, event listeners).
   - **Props**: Luôn sử dụng destructing cho props và định nghĩa kiểu dữ liệu rõ ràng.
 
-  ### 5.3. Styling (Custom CSS & CSS Modules)
-  - **Tuyệt đối không sử dụng Tailwind CSS**.
-  - Sử dụng **CSS Modules** (`*.module.css`) cho từng component để tránh xung đột style.
-  - Tất cả các mã màu phải sử dụng biến CSS từ `globals.css` (ví dụ: `var(--bg-primary)`).
-  - Không hardcode mã màu hex/rgb trực tiếp trong file CSS.
+  ### 5.3. Styling (Tailwind CSS 4)
+  - Dùng **Tailwind CSS** với các token màu của dự án (xem mục 1). Không dùng CSS Modules cho code mới.
+  - CSS dùng chung (class `card`, `input`, keyframes...) đặt trong `app/globals.css`.
+  - Không hardcode mã màu hex/rgb trong component.
+  - Ngoại lệ: `components/shared/ChatWidget` vẫn dùng CSS Module cũ, sẽ chuyển khi làm lại chatbot.
 
   ### 5.4. Naming Convention (Quy ước đặt tên)
   - **Thư mục & File**: camelCase hoặc kebab-case (nhất quán theo cấu trúc hiện tại).

@@ -19,12 +19,12 @@ export const orderService = {
     },
 
     getOrderByCode: async (code: string): Promise<ApiResponse<OrderResponse>> => {
-        const response = await apiClient.get<ApiResponse<OrderResponse>>(`/orders/${code}`);
+        const response = await apiClient.get<ApiResponse<OrderResponse>>(`/orders/${encodeURIComponent(code)}`);
         return response.data;
     },
 
     cancelOrder: async (code: string): Promise<ApiResponse<OrderResponse>> => {
-        const response = await apiClient.put<ApiResponse<OrderResponse>>(`/orders/${code}/cancel`);
+        const response = await apiClient.put<ApiResponse<OrderResponse>>(`/orders/${encodeURIComponent(code)}/cancel`);
         return response.data;
     },
 
@@ -33,10 +33,9 @@ export const orderService = {
         return response.data;
     },
 
-    getUserReturnRequests: async (): Promise<ApiResponse<ReturnRequestResponse[]>> => {
-        const response = await apiClient.get<ApiResponse<ReturnRequestResponse[]>>('/return-requests');
+    /** Chỉ yêu cầu đổi/trả của chính khách hàng */
+    getMyReturnRequests: async (): Promise<ApiResponse<ReturnRequestResponse[]>> => {
+        const response = await apiClient.get<ApiResponse<ReturnRequestResponse[]>>('/return-requests/my');
         return response.data;
     },
-    
-
 };

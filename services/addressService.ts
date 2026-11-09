@@ -23,8 +23,8 @@ export const addressService = {
         return response.data;
     },
 
-    setDefaultAddress: async (id: number): Promise<ApiResponse<void>> => {
-        const response = await apiClient.patch<ApiResponse<void>>(`/addresses/${id}/default`);
+    setDefaultAddress: async (id: number): Promise<ApiResponse<Address>> => {
+        const response = await apiClient.put<ApiResponse<Address>>(`/addresses/${id}/default`);
         return response.data;
     },
 };

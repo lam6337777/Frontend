@@ -20,16 +20,18 @@ export interface ProductImage {
 }
 
 export interface ProductResponse {
-    id: string; // SKU code
+    id: string; // Mã sản phẩm
     name: string;
     slug: string;
-    description: string;
-    categoryName: string;
-    categoryId: string;
-    brandName: string;
-    brandId: number | string;
+    description: string | null;
+    categoryName: string | null;
+    categoryId: string | null;
+    brandName: string | null;
+    brandId: number | string | null;
     originalPrice: number;
-    salePrice: number;
+    salePrice: number | null;
+    /** File mô hình 3D (.glb). Null = chỉ có ảnh */
+    model3dUrl?: string | null;
     isActive: boolean;
     isFeatured: boolean;
     totalSold: number;
@@ -38,20 +40,45 @@ export interface ProductResponse {
     createdAt: string;
     images: ProductImage[];
     variants: ProductVariant[];
-    // Hỗ trợ fallback cho các component cũ nếu cần
-    basePrice?: number; 
-    featuredImage?: string | null;
+}
+
+export interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    imageUrl?: string | null;
+}
+
+export interface Brand {
+    id: number;
+    name: string;
+    slug: string;
+    logoUrl?: string | null;
+}
+
+export type ProductSort = 'newest' | 'best_selling' | 'price_asc' | 'price_desc' | 'rating';
+
+export interface ProductQuery {
+    categoryName?: string;
+    brandName?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    productSize?: string;
+    q?: string;
+    onSale?: boolean;
+    sortBy?: ProductSort;
+    page?: number;
+    size?: number;
 }
 
 export interface Page<T> {
     content: T[];
-    pageable: any;
     last: boolean;
     totalPages: number;
     totalElements: number;
     size: number;
     number: number;
-    sort: any;
     first: boolean;
     numberOfElements: number;
     empty: boolean;
