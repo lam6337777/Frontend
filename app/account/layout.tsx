@@ -24,8 +24,8 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
 
     return (
         <div className="container-page py-6">
-            <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-                <aside>
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+                <aside className="min-w-0">
                     <div className="card overflow-hidden lg:sticky lg:top-36">
                         <div className="flex items-center gap-3 bg-gradient-to-br from-brand-500 to-brand-600 p-5 text-white">
                             <span className="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-lg font-bold">

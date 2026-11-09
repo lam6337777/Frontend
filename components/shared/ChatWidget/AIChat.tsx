@@ -251,7 +251,7 @@ export function AIChat({ isAuthenticated, onHandoff }: { isAuthenticated: boolea
                 )}
             </div>
 
-            <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-line bg-white p-3">
+            <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-line bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3">
                 <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}

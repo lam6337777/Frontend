@@ -141,6 +141,16 @@
     box-shadow: 0 0 0 3px rgb(14 168 147 / 0.15);
   }
 
+  /* iOS Safari tự phóng to trang khi chạm vào ô nhập có chữ < 16px — giữ 16px trên điện thoại */
+  @media (max-width: 767px) {
+    .input,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
   .input[aria-invalid="true"] {
     border-color: var(--color-coral-500);
   }

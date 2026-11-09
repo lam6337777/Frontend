@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Bot, Headset, LogIn, MessageCircle, Minus, Send } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useAppSelector } from '@/store/redux/hooks';
 import { cn } from '@/lib/utils';
 import { AIChat } from './AIChat';
@@ -19,6 +20,9 @@ export default function ChatWidget() {
     const staff = useStaffChat(isAuthenticated, open && tab === 'STAFF');
     const [input, setInput] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
+    // Trang chi tiết sản phẩm có thanh "Thêm vào giỏ / Mua ngay" cố định ở đáy (điện thoại) → đẩy nút chat lên trên
+    const pathname = usePathname();
+    const aboveBuyBar = /^\/products\/[^/]+$/.test(pathname || '');
 
     // Có tin nhân viên chưa đọc → mở thẳng tab Nhân viên
     const openWidget = () => {
@@ -52,7 +56,10 @@ export default function ChatWidget() {
                 <button
                     onClick={openWidget}
                     aria-label="Mở hỗ trợ trực tuyến"
-                    className="fixed bottom-5 right-5 z-[60] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-lift transition hover:scale-105 active:scale-95"
+                    className={cn(
+                        'fixed right-4 z-[60] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-lift transition hover:scale-105 active:scale-95 sm:right-5 md:bottom-5',
+                        aboveBuyBar ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(1rem+env(safe-area-inset-bottom))]'
+                    )}
                 >
                     <MessageCircle className="h-6 w-6" />
                     {staff.unread > 0 && (
@@ -67,7 +74,7 @@ export default function ChatWidget() {
                 <section
                     role="dialog"
                     aria-label="Hỗ trợ trực tuyến"
-                    className="fixed inset-0 z-[60] flex animate-fade-up flex-col overflow-hidden bg-mint-50 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(640px,calc(100vh-2.5rem))] sm:w-[390px] sm:rounded-3xl sm:border sm:border-line sm:shadow-lift"
+                    className="fixed inset-x-0 top-0 z-[60] flex h-[100dvh] animate-fade-up flex-col overflow-hidden bg-mint-50 pt-[env(safe-area-inset-top)] sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(640px,calc(100dvh-2.5rem))] sm:w-[390px] sm:rounded-3xl sm:border sm:border-line sm:pt-0 sm:shadow-lift"
                 >
                     <header className="relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-500 to-brand-400 px-4 pb-3 pt-4 text-white">
                         <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
@@ -159,7 +166,7 @@ export default function ChatWidget() {
                                     })
                                 )}
                             </div>
-                            <form onSubmit={sendStaff} className="flex items-center gap-2 border-t border-line bg-white p-3">
+                            <form onSubmit={sendStaff} className="flex items-center gap-2 border-t border-line bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3">
                                 <input
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}

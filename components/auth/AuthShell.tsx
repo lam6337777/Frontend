@@ -67,7 +67,7 @@ export function PasswordField({
                     required
                     minLength={6}
                 />
-                <button type="button" onClick={onToggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-brand-600">
+                <button type="button" onClick={onToggle} aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"} className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg px-3 py-2.5 text-xs font-semibold text-brand-600 hover:bg-brand-50">
                     {show ? 'Ẩn' : 'Hiện'}
                 </button>
             </span>

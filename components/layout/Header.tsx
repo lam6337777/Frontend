@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -83,6 +84,19 @@ export function Header() {
         setAccountOpen(false);
         setMobileSearch(false);
     }, [pathname]);
+
+    // Khóa cuộn nền khi menu điện thoại đang mở
+    useEffect(() => {
+        if (!drawer) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setDrawer(false);
+        window.addEventListener('keydown', onKey);
+        return () => {
+            document.body.style.overflow = prev;
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [drawer]);
 
     useEffect(() => {
         const onClick = (e: MouseEvent) => {
@@ -218,11 +232,12 @@ export function Header() {
                 </div>
             </nav>
 
-            {/* Drawer menu trên điện thoại */}
-            {drawer && (
-                <div className="fixed inset-0 z-50 lg:hidden">
-                    <div className="absolute inset-0 bg-ink/40" onClick={() => setDrawer(false)} />
-                    <aside className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col bg-white shadow-lift">
+            {/* Drawer menu trên điện thoại — render ra <body> bằng portal: header có backdrop-blur nên
+                phần tử fixed bên trong sẽ bị giới hạn trong khung header (Safari/Chrome) */}
+            {drawer && createPortal(
+                <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+                    <div className="absolute inset-0 animate-[fade-up_0.2s_ease-out] bg-ink/40" onClick={() => setDrawer(false)} />
+                    <aside className="absolute inset-y-0 left-0 flex h-[100dvh] w-80 max-w-[85%] flex-col bg-white pb-[env(safe-area-inset-bottom)] shadow-lift">
                         <div className="flex h-16 items-center justify-between border-b border-line px-4">
                             <Logo />
                             <button className={iconBtn} onClick={() => setDrawer(false)} aria-label="Đóng menu">
@@ -262,7 +277,8 @@ export function Header() {
                             )}
                         </div>
                     </aside>
-                </div>
+                </div>,
+                document.body
             )}
         </header>
     );

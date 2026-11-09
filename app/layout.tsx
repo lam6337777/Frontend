@@ -25,6 +25,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
     themeColor: '#0ea893',
+    width: 'device-width',
+    initialScale: 1,
+    // Cho phép dùng env(safe-area-inset-*) với tai thỏ / thanh home của iPhone
+    viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

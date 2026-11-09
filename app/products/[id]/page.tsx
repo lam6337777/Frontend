@@ -161,7 +161,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         cn('relative px-1 pb-3 text-sm font-semibold transition', tab === t ? 'text-brand-700' : 'text-muted hover:text-ink');
 
     return (
-        <div className="pb-24 md:pb-6">
+        <div className="pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="container-page py-4">
                 <Breadcrumb
                     items={[
@@ -387,7 +387,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <RecentlyViewed excludeId={product.id} className="container-page mt-14" />
 
             {/* Thanh mua hàng cố định trên điện thoại */}
-            <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-white/95 p-3 backdrop-blur md:hidden">
+            <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
                 <WishlistButton productId={product.id} className="h-12 w-12 shrink-0 rounded-xl border border-line" />
                 <Button variant="soft" className="h-12 flex-1" onClick={() => handleAdd('cart')} loading={adding === 'cart'} disabled={stock === 0}>
                     Thêm vào giỏ
