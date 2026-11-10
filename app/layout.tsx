@@ -4,6 +4,7 @@ import './globals.css';
 import { StoreProvider } from '@/store/redux/Provider';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthBootstrap } from '@/components/layout/AuthBootstrap';
+import { ServerWakeNotice } from '@/components/layout/ServerWakeNotice';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import ChatWidget from '@/components/shared/ChatWidget/ChatWidget';
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <StoreProvider>
                     <ToastProvider>
                         <AuthBootstrap />
+                        <ServerWakeNotice />
                         <Header />
                         <main className="min-h-[60vh]">{children}</main>
                         <Footer />
