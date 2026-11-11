@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Heart } from 'lucide-react';
 import { wishlistService } from '@/services/wishlistService';
 import { ProductResponse } from '@/types/product';
@@ -24,8 +24,11 @@ export default function WishlistPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Bỏ tim ngay trên trang thì ẩn sản phẩm đó luôn
-    const visible = products.filter((p) => ids.includes(p.id));
+    // Bỏ tim ngay trên trang thì ẩn sản phẩm đó luôn. Chỉ ẩn những sản phẩm đã từng có trong `ids`
+    // (tức là khách vừa bỏ tim), để lúc danh sách id chưa tải xong trang không bị trống.
+    const seen = useRef(new Set<string>());
+    ids.forEach((id) => seen.current.add(id));
+    const visible = products.filter((p) => ids.includes(p.id) || !seen.current.has(p.id));
 
     return (
         <div>

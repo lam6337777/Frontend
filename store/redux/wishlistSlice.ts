@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { wishlistService } from '@/services/wishlistService';
-import type { RootState } from './store';
 
 /** Chỉ lưu danh sách ID sản phẩm yêu thích để tô trái tim trên mọi thẻ sản phẩm */
 interface WishlistState {
@@ -12,11 +11,14 @@ export const fetchWishlistIds = createAsyncThunk('wishlist/fetchIds', async () =
     return res.data || [];
 });
 
-/** Bật/tắt yêu thích. Cập nhật giao diện ngay, hoàn tác nếu API lỗi. */
+/**
+ * Bật/tắt yêu thích. Cập nhật giao diện ngay, hoàn tác nếu API lỗi.
+ * `liked` là trạng thái TRƯỚC khi bấm, do nơi gọi truyền vào: action `pending` (cập nhật lạc quan)
+ * chạy trước payloadCreator, nên đọc getState() ở đây sẽ thấy trạng thái đã bị đảo và gọi nhầm API.
+ */
 export const toggleWishlist = createAsyncThunk(
     'wishlist/toggle',
-    async (productId: string, { getState, rejectWithValue }) => {
-        const liked = (getState() as RootState).wishlist.ids.includes(productId);
+    async ({ productId, liked }: { productId: string; liked: boolean }, { rejectWithValue }) => {
         try {
             if (liked) await wishlistService.remove(productId);
             else await wishlistService.add(productId);
@@ -41,8 +43,8 @@ const wishlistSlice = createSlice({
                 state.ids = action.payload;
             })
             .addCase(toggleWishlist.pending, (state, action) => {
-                const id = action.meta.arg;
-                state.ids = state.ids.includes(id) ? state.ids.filter((x) => x !== id) : [id, ...state.ids];
+                const { productId: id, liked } = action.meta.arg;
+                state.ids = liked ? state.ids.filter((x) => x !== id) : [id, ...state.ids.filter((x) => x !== id)];
             })
             .addCase(toggleWishlist.rejected, (state, action) => {
                 const p = action.payload as { productId: string; liked: boolean } | undefined;

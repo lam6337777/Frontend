@@ -24,9 +24,10 @@ export function WishlistButton({ productId, className, withLabel }: { productId:
             router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`);
             return;
         }
-        const res = await dispatch(toggleWishlist(productId));
+        const wasLiked = liked;
+        const res = await dispatch(toggleWishlist({ productId, liked: wasLiked }));
         if (toggleWishlist.rejected.match(res)) toast(t('product.wishlistError'), 'error');
-        else toast(liked ? t('product.removedFromWishlist') : t('product.addedToWishlist'));
+        else toast(wasLiked ? t('product.removedFromWishlist') : t('product.addedToWishlist'));
     };
 
     return (
