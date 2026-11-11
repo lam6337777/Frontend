@@ -131,6 +131,11 @@ export function AIChat({ isAuthenticated, onHandoff }: { isAuthenticated: boolea
         setSending(true);
         const now = new Date().toISOString();
         const botKey = `b${Date.now()}`;
+        // 3 lượt hỏi–đáp gần nhất (6 tin) làm ngữ cảnh cho câu hỏi nối tiếp
+        const history = messages
+            .filter((m) => !m.streaming && m.content.trim())
+            .slice(-6)
+            .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
         setMessages((prev) => [
             ...prev,
             { key: `u${Date.now()}`, role: 'user', content: question, createdAt: now },
@@ -156,7 +161,8 @@ export function AIChat({ isAuthenticated, onHandoff }: { isAuthenticated: boolea
                         patch((m) => ({ ...m, handoff: true }));
                     }
                 },
-                controller.signal
+                controller.signal,
+                history
             );
             patch((m) => ({ ...m, streaming: false }));
         } catch (e) {

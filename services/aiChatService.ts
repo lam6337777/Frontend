@@ -62,11 +62,18 @@ export const aiChatService = {
     remove: (id: number) => request(`/api/chat/session/${id}`, { method: 'DELETE' }),
 
     /** Gửi câu hỏi và nhận từng sự kiện SSE qua callback. */
-    async stream(message: string, sessionId: number | null, onEvent: (e: AIStreamEvent) => void, signal?: AbortSignal) {
+    async stream(
+        message: string,
+        sessionId: number | null,
+        onEvent: (e: AIStreamEvent) => void,
+        signal?: AbortSignal,
+        history: { role: 'user' | 'bot'; content: string }[] = []
+    ) {
         const res = await fetch(`${CHATBOT_URL}/api/chat/stream`, {
             method: 'POST',
             headers: headers(true),
-            body: JSON.stringify({ message, session_id: sessionId }),
+            // history: vài lượt gần nhất để bot hiểu câu hỏi nối tiếp (khách chưa đăng nhập không có phiên lưu ở server)
+            body: JSON.stringify({ message, session_id: sessionId, history }),
             signal,
         });
         if (res.status === 429) throw new Error('rate');
