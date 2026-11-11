@@ -7,7 +7,17 @@ export interface ReviewResponse {
     orderCode: string;
     rating: number;
     comment: string;
+    variantSize?: string | null;
+    variantColor?: string | null;
     createdAt: string;
+}
+
+export interface ReviewSummary {
+    average: number;
+    total: number;
+    withComment: number;
+    /** số đánh giá theo mức sao: { "5": 12, "4": 3, ... } */
+    counts: Record<string, number>;
 }
 
 export interface CreateReviewRequest {
