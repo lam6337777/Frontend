@@ -18,6 +18,8 @@ export default function ChatWidget() {
     const { isAuthenticated } = useAppSelector((s) => s.auth);
     const t = useT();
     const [open, setOpen] = useState(false);
+    // Đã mở lần nào thì giữ widget trong DOM (chỉ ẩn đi) để không mất cuộc trò chuyện khi thu nhỏ / đổi tab
+    const [mounted, setMounted] = useState(false);
     const [tab, setTab] = useState<Tab>('AI');
     const staff = useStaffChat(isAuthenticated, open && tab === 'STAFF');
     const [input, setInput] = useState('');
@@ -29,7 +31,14 @@ export default function ChatWidget() {
     // Có tin nhân viên chưa đọc → mở thẳng tab Nhân viên
     const openWidget = () => {
         if (staff.unread > 0) setTab('STAFF');
+        setMounted(true);
         setOpen(true);
+    };
+
+    // Trên điện thoại khung chat phủ kín màn hình → bấm thẻ sản phẩm thì thu nhỏ để khách thấy trang sản phẩm.
+    // Máy tính: khung chat chỉ là ô nhỏ góc phải nên giữ nguyên để khách hỏi tiếp.
+    const onProductOpen = () => {
+        if (window.matchMedia('(max-width: 639px)').matches) setOpen(false);
     };
 
     useEffect(() => {
@@ -72,11 +81,15 @@ export default function ChatWidget() {
                 </button>
             )}
 
-            {open && (
+            {mounted && (
                 <section
                     role="dialog"
                     aria-label={t('chat.dialog')}
-                    className="fixed inset-x-0 top-0 z-[60] flex h-[100dvh] animate-fade-up flex-col overflow-hidden bg-mint-50 pt-[env(safe-area-inset-top)] sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(640px,calc(100dvh-2.5rem))] sm:w-[390px] sm:rounded-3xl sm:border sm:border-line sm:pt-0 sm:shadow-lift"
+                    aria-hidden={!open}
+                    className={cn(
+                        'fixed inset-x-0 top-0 z-[60] flex h-[100dvh] animate-fade-up flex-col overflow-hidden bg-mint-50 pt-[env(safe-area-inset-top)] sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(640px,calc(100dvh-2.5rem))] sm:w-[390px] sm:rounded-3xl sm:border sm:border-line sm:pt-0 sm:shadow-lift',
+                        !open && 'hidden'
+                    )}
                 >
                     <header className="relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-500 to-brand-400 px-4 pb-3 pt-4 text-white">
                         <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
@@ -118,9 +131,11 @@ export default function ChatWidget() {
                         </div>
                     </header>
 
-                    {tab === 'AI' ? (
-                        <AIChat isAuthenticated={isAuthenticated} onHandoff={() => setTab('STAFF')} />
-                    ) : !isAuthenticated ? (
+                    {/* AIChat luôn được giữ (ẩn khi ở tab Nhân viên) để không mất hội thoại khi đổi tab */}
+                    <div className={cn('flex min-h-0 flex-1 flex-col', tab !== 'AI' && 'hidden')}>
+                        <AIChat isAuthenticated={isAuthenticated} onHandoff={() => setTab('STAFF')} onProductOpen={onProductOpen} />
+                    </div>
+                    {tab === 'AI' ? null : !isAuthenticated ? (
                         <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
                             <span className="grid h-14 w-14 place-items-center rounded-2xl bg-coral-50 text-coral-500">
                                 <Headset className="h-7 w-7" />

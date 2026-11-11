@@ -31,7 +31,7 @@ function relative(iso: string, t: TFn) {
     return new Date(iso).toLocaleDateString(getFormatLocale());
 }
 
-function ProductStrip({ items }: { items: AIProduct[] }) {
+function ProductStrip({ items, onOpen }: { items: AIProduct[]; onOpen?: () => void }) {
     const { t } = useI18n();
     return (
         <div className="-mx-1 mt-2 flex snap-x gap-2 overflow-x-auto px-1 pb-1 scrollbar-none">
@@ -39,6 +39,7 @@ function ProductStrip({ items }: { items: AIProduct[] }) {
                 <Link
                     key={p.id}
                     href={p.url}
+                    onClick={onOpen}
                     className="w-36 shrink-0 snap-start overflow-hidden rounded-2xl border border-line bg-surface transition hover:-translate-y-0.5 hover:shadow-lift"
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -63,7 +64,16 @@ function ProductStrip({ items }: { items: AIProduct[] }) {
     );
 }
 
-export function AIChat({ isAuthenticated, onHandoff }: { isAuthenticated: boolean; onHandoff: () => void }) {
+export function AIChat({
+    isAuthenticated,
+    onHandoff,
+    onProductOpen,
+}: {
+    isAuthenticated: boolean;
+    onHandoff: () => void;
+    /** Khách bấm vào thẻ sản phẩm (để widget thu nhỏ trên điện thoại, nhường chỗ cho trang sản phẩm) */
+    onProductOpen?: () => void;
+}) {
     const { t } = useI18n();
     const [messages, setMessages] = useState<UIMessage[]>([]);
     const [sessions, setSessions] = useState<AISession[]>([]);
@@ -241,7 +251,7 @@ export function AIChat({ isAuthenticated, onHandoff }: { isAuthenticated: boolea
                                                 ))}
                                             </span>
                                         )}
-                                        {m.products?.length ? <ProductStrip items={m.products} /> : null}
+                                        {m.products?.length ? <ProductStrip items={m.products} onOpen={onProductOpen} /> : null}
                                         {m.handoff && (
                                             <button onClick={onHandoff} className="mt-2 flex items-center gap-1.5 rounded-lg bg-coral-50 px-2.5 py-1.5 text-xs font-bold text-coral-600 hover:bg-coral-100">
                                                 <Headset className="h-3.5 w-3.5" /> {t('chat.toStaff')}
