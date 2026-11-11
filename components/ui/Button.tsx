@@ -9,10 +9,10 @@ type Size = 'sm' | 'md' | 'lg';
 const VARIANT: Record<Variant, string> = {
     primary: 'bg-brand-500 text-white hover:bg-brand-600 shadow-sm shadow-brand-500/30',
     coral: 'bg-coral-500 text-white hover:bg-coral-600 shadow-sm shadow-coral-500/30',
-    outline: 'border border-line bg-white text-ink hover:border-brand-400 hover:text-brand-700',
+    outline: 'border border-line bg-surface text-ink hover:border-brand-400 hover:text-brand-700',
     ghost: 'text-ink hover:bg-mint-100',
     soft: 'bg-brand-50 text-brand-700 hover:bg-brand-100',
-    dark: 'bg-ink text-white hover:bg-brand-800',
+    dark: 'bg-night text-white hover:bg-brand-800',
 };
 
 const SIZE: Record<Size, string> = {

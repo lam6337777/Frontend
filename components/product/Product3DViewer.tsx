@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Maximize2, Minimize2, Pause, Play, RotateCcw, Smartphone, Hand } from 'lucide-react';
 import type { ModelViewerElement } from '@/types/model-viewer';
 import { cn } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
+import type { TKey } from '@/lib/i18n/core';
 
-const VARIANT_LABEL: Record<string, string> = {
-    beach: 'Biển xanh',
-    midnight: 'Nửa đêm',
-    street: 'Đường phố',
+const VARIANT_LABEL: Record<string, TKey> = {
+    beach: 'viewer.beach',
+    midnight: 'viewer.midnight',
+    street: 'viewer.street',
 };
 
 interface Props {
@@ -22,6 +24,10 @@ interface Props {
  * tự xoay, đổi phối màu (nếu file .glb có KHR_materials_variants), toàn màn hình và AR trên điện thoại.
  */
 export function Product3DViewer({ src, poster, alt }: Props) {
+    const t = useT();
+    // Màn hình cảm ứng: hướng dẫn "vuốt / chụm" thay vì "kéo / cuộn"
+    const [touch, setTouch] = useState(false);
+    useEffect(() => setTouch(window.matchMedia('(hover: none)').matches), []);
     const wrapRef = useRef<HTMLDivElement>(null);
     const mvRef = useRef<ModelViewerElement | null>(null);
     const [ready, setReady] = useState(false);
@@ -101,18 +107,18 @@ export function Product3DViewer({ src, poster, alt }: Props) {
         else wrapRef.current?.requestFullscreen?.();
     };
 
-    const ctrl = 'grid h-10 w-10 place-items-center rounded-full bg-white/90 text-ink shadow-card backdrop-blur transition hover:bg-white hover:text-brand-600';
+    const ctrl = 'grid h-10 w-10 place-items-center rounded-full bg-surface/90 text-ink shadow-card backdrop-blur transition hover:bg-surface hover:text-brand-600';
 
     if (failed) {
         return (
             <div className="grid h-full place-items-center p-6 text-center text-sm text-muted">
-                Không tải được mô hình 3D. Vui lòng xem ảnh sản phẩm.
+                {t('viewer.loadError')}
             </div>
         );
     }
 
     return (
-        <div ref={wrapRef} className={cn('relative h-full w-full overflow-hidden', fullscreen ? 'bg-white' : 'bg-gradient-to-b from-brand-50 via-white to-mint-100')}>
+        <div ref={wrapRef} className={cn('relative h-full w-full overflow-hidden', fullscreen ? 'bg-surface' : 'bg-gradient-to-b from-brand-50 via-surface to-mint-100')}>
             {ready && (
                 <model-viewer
                     ref={(el: HTMLElement | null) => {
@@ -146,7 +152,7 @@ export function Product3DViewer({ src, poster, alt }: Props) {
             {/* Thanh tiến trình tải */}
             {!loaded && (
                 <div className="pointer-events-none absolute inset-x-8 bottom-8">
-                    <p className="mb-2 text-center text-xs font-medium text-muted">Đang tải mô hình 3D… {Math.round(progress * 100)}%</p>
+                    <p className="mb-2 text-center text-xs font-medium text-muted">{t('viewer.loading', { p: Math.round(progress * 100) })}</p>
                     <div className="h-1.5 overflow-hidden rounded-full bg-brand-100">
                         <div className="h-full rounded-full bg-brand-500 transition-[width] duration-200" style={{ width: `${progress * 100}%` }} />
                     </div>
@@ -154,20 +160,20 @@ export function Product3DViewer({ src, poster, alt }: Props) {
             )}
 
             {loaded && hint && (
-                <div className="pointer-events-none absolute left-1/2 top-4 flex -translate-x-1/2 animate-fade-up items-center gap-2 rounded-full bg-ink/75 px-4 py-2 text-xs font-medium text-white backdrop-blur">
-                    <Hand className="h-4 w-4" /> Kéo để xoay 360° · Cuộn để phóng to
+                <div className="pointer-events-none absolute left-1/2 top-4 flex -translate-x-1/2 animate-fade-up items-center gap-2 rounded-full bg-night/75 px-4 py-2 text-xs font-medium text-white backdrop-blur">
+                    <Hand className="h-4 w-4" /> {t(touch ? 'viewer.hintTouch' : 'viewer.hint')}
                 </div>
             )}
 
             {/* Điều khiển */}
             <div className="absolute right-3 top-3 flex flex-col gap-2">
-                <button className={ctrl} onClick={toggleRotate} aria-label={rotating ? 'Dừng tự xoay' : 'Tự xoay'} title={rotating ? 'Dừng tự xoay' : 'Tự xoay'}>
+                <button className={ctrl} onClick={toggleRotate} aria-label={rotating ? t('viewer.stopRotate') : t('viewer.autoRotate')} title={rotating ? t('viewer.stopRotate') : t('viewer.autoRotate')}>
                     {rotating ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </button>
-                <button className={ctrl} onClick={resetView} aria-label="Đặt lại góc nhìn" title="Đặt lại góc nhìn">
+                <button className={ctrl} onClick={resetView} aria-label={t('viewer.reset')} title={t('viewer.reset')}>
                     <RotateCcw className="h-4 w-4" />
                 </button>
-                <button className={ctrl} onClick={toggleFullscreen} aria-label="Toàn màn hình" title="Toàn màn hình">
+                <button className={ctrl} onClick={toggleFullscreen} aria-label={t('viewer.fullscreen')} title={t('viewer.fullscreen')}>
                     {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                 </button>
             </div>
@@ -181,10 +187,10 @@ export function Product3DViewer({ src, poster, alt }: Props) {
                             onClick={() => pickVariant(v)}
                             className={cn(
                                 'rounded-full px-3.5 py-1.5 text-xs font-semibold shadow-card backdrop-blur transition',
-                                variant === v ? 'bg-brand-500 text-white' : 'bg-white/90 text-ink hover:text-brand-600'
+                                variant === v ? 'bg-brand-500 text-white' : 'bg-surface/90 text-ink hover:text-brand-600'
                             )}
                         >
-                            {VARIANT_LABEL[v] || v}
+                            {VARIANT_LABEL[v] ? t(VARIANT_LABEL[v]) : v}
                         </button>
                     ))}
                 </div>
@@ -193,7 +199,7 @@ export function Product3DViewer({ src, poster, alt }: Props) {
             {canAR && (
                 <button
                     onClick={() => mvRef.current?.activateAR()}
-                    className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-2 text-xs font-semibold text-white shadow-lift"
+                    className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-night px-3.5 py-2 text-xs font-semibold text-white shadow-lift"
                 >
                     <Smartphone className="h-4 w-4" /> Xem AR
                 </button>

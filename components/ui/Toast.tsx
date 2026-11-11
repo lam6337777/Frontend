@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 type ToastType = 'success' | 'error' | 'info';
 interface ToastItem {
@@ -23,6 +24,7 @@ const TONE = {
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
+    const tr = useT();
     const [items, setItems] = useState<ToastItem[]>([]);
 
     const show = useCallback((message: string, type: ToastType = 'success') => {
@@ -44,14 +46,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     return (
                         <div
                             key={t.id}
-                            className="pointer-events-auto flex w-full max-w-sm animate-fade-up items-start gap-3 rounded-2xl bg-white px-4 py-3 text-sm shadow-lift ring-1 ring-line"
+                            className="pointer-events-auto flex w-full max-w-sm animate-fade-up items-start gap-3 rounded-2xl bg-surface px-4 py-3 text-sm shadow-lift ring-1 ring-line"
                         >
                             <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', TONE[t.type])} aria-hidden />
                             <p className="flex-1 font-medium text-ink">{t.message}</p>
                             <button
                                 onClick={() => setItems((prev) => prev.filter((x) => x.id !== t.id))}
                                 className="text-muted hover:text-ink"
-                                aria-label="Đóng thông báo"
+                                aria-label={tr('common.close')}
                             >
                                 <X className="h-4 w-4" />
                             </button>

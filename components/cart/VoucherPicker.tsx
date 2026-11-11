@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { VoucherTicket, voucherCondition } from '@/components/home/VoucherStrip';
 import { errorMessage, formatVND } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 const KEY = 'pf:voucher';
 
@@ -40,6 +41,7 @@ export function VoucherPicker({
     applied: VoucherCheck | null;
     onChange: (v: VoucherCheck | null) => void;
 }) {
+    const t = useT();
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ export function VoucherPicker({
         } catch (e) {
             onChange(null);
             saveVoucherCode('');
-            if (!silent) setError(errorMessage(e, 'Mã giảm giá không hợp lệ'));
+            if (!silent) setError(errorMessage(e, t('voucher.invalid')));
         } finally {
             setLoading(false);
         }
@@ -96,9 +98,9 @@ export function VoucherPicker({
                     <Ticket className="h-5 w-5 shrink-0 text-brand-600" />
                     <div className="min-w-0 flex-1">
                         <p className="font-mono text-sm font-bold text-brand-800">{applied.code}</p>
-                        <p className="text-xs text-brand-700">Giảm {formatVND(applied.discountAmount)}</p>
+                        <p className="text-xs text-brand-700">{t('voucher.saved', { v: formatVND(applied.discountAmount) })}</p>
                     </div>
-                    <button onClick={remove} className="rounded-full p-1 text-brand-700 hover:bg-brand-100" aria-label="Bỏ mã giảm giá">
+                    <button onClick={remove} className="rounded-full p-1 text-brand-700 hover:bg-brand-100" aria-label={t('voucher.remove')}>
                         <X className="h-4 w-4" />
                     </button>
                 </div>
@@ -114,25 +116,25 @@ export function VoucherPicker({
                         <input
                             value={code}
                             onChange={(e) => setCode(e.target.value.toUpperCase())}
-                            placeholder="Nhập mã giảm giá"
+                            placeholder={t('voucher.placeholder')}
                             className="input font-mono uppercase"
-                            aria-label="Mã giảm giá"
+                            aria-label={t('voucher.label')}
                             aria-invalid={!!error}
                         />
                         <Button type="submit" variant="dark" loading={loading} disabled={!code.trim()}>
-                            Áp dụng
+                            {t('voucher.apply')}
                         </Button>
                     </form>
                     {error && <p className="mt-1.5 text-xs font-medium text-coral-600">{error}</p>}
                 </>
             )}
             <button onClick={openList} className="mt-2 flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">
-                <Ticket className="h-4 w-4" /> Chọn mã có sẵn
+                <Ticket className="h-4 w-4" /> {t('voucher.pick')}
             </button>
 
-            <Modal open={open} onClose={() => setOpen(false)} title="Mã giảm giá khả dụng">
+            <Modal open={open} onClose={() => setOpen(false)} title={t('voucher.available')}>
                 {list.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-muted">Hiện chưa có mã giảm giá nào.</p>
+                    <p className="py-6 text-center text-sm text-muted">{t('voucher.none')}</p>
                 ) : (
                     <div className="space-y-3">
                         {list.map((v) => {
@@ -144,18 +146,18 @@ export function VoucherPicker({
                                         action={
                                             applied?.code === v.code ? (
                                                 <span className="flex items-center gap-1 text-xs font-bold text-brand-600">
-                                                    <Check className="h-4 w-4" /> Đang dùng
+                                                    <Check className="h-4 w-4" /> {t('voucher.inUse')}
                                                 </span>
                                             ) : (
                                                 <Button size="sm" disabled={!eligible} loading={loading} onClick={() => apply(v.code)}>
-                                                    Dùng
+                                                    {t('voucher.use')}
                                                 </Button>
                                             )
                                         }
                                     />
                                     {!eligible && (
                                         <p className="mt-1 text-xs text-coral-600">
-                                            Mua thêm {formatVND(v.minOrderValue - subtotal)} để dùng ({voucherCondition(v)})
+                                            {t('voucher.needMore', { v: formatVND(v.minOrderValue - subtotal), cond: voucherCondition(v, t) })}
                                         </p>
                                     )}
                                 </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Ruler } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
+import { useT } from '@/lib/i18n/client';
 
 // Bảng quy đổi size giày nam/unisex phổ biến (EU → chiều dài bàn chân)
 const ROWS = [
@@ -17,24 +18,25 @@ const ROWS = [
 ];
 
 export function SizeGuide() {
+    const t = useT();
     const [open, setOpen] = useState(false);
     return (
         <>
-            <button onClick={() => setOpen(true)} className="flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">
-                <Ruler className="h-4 w-4" /> Bảng size
+            <button onClick={() => setOpen(true)} className="flex items-center gap-1 py-1.5 text-sm font-semibold text-brand-600 hover:underline">
+                <Ruler className="h-4 w-4" /> {t('sizeGuide.button')}
             </button>
-            <Modal open={open} onClose={() => setOpen(false)} title="Hướng dẫn chọn size">
+            <Modal open={open} onClose={() => setOpen(false)} title={t('sizeGuide.title')}>
                 <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm text-muted">
-                    <li>Đặt bàn chân lên tờ giấy, đánh dấu điểm gót và ngón dài nhất.</li>
-                    <li>Đo khoảng cách giữa 2 điểm (cm), đo vào buổi chiều khi chân nở nhất.</li>
-                    <li>Đối chiếu bảng dưới. Nếu ở giữa 2 size, nên chọn size lớn hơn.</li>
+                    <li>{t('sizeGuide.step1')}</li>
+                    <li>{t('sizeGuide.step2')}</li>
+                    <li>{t('sizeGuide.step3')}</li>
                 </ol>
                 <table className="w-full overflow-hidden rounded-xl text-center text-sm">
                     <thead className="bg-brand-50 text-brand-800">
                         <tr>
                             <th className="py-2.5">EU</th>
                             <th>US</th>
-                            <th>Chiều dài chân (cm)</th>
+                            <th>{t('sizeGuide.footLength')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,7 +51,7 @@ export function SizeGuide() {
                         ))}
                     </tbody>
                 </table>
-                <p className="mt-3 text-xs text-muted">Bảng mang tính tham khảo, form giày có thể khác nhau giữa các dòng sản phẩm.</p>
+                <p className="mt-3 text-xs text-muted">{t('sizeGuide.note')}</p>
             </Modal>
         </>
     );

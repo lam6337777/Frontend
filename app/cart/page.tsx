@@ -15,8 +15,10 @@ import { VoucherPicker } from '@/components/cart/VoucherPicker';
 import { FreeShipProgress } from '@/components/cart/FreeShipProgress';
 import { RecentlyViewed } from '@/components/product/RecentlyViewed';
 import { errorMessage, formatVND, PLACEHOLDER_IMAGE } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 export default function CartPage() {
+    const t = useT();
     const router = useRouter();
     const dispatch = useAppDispatch();
     const toast = useToast();
@@ -39,7 +41,7 @@ export default function CartPage() {
         try {
             await fn();
         } catch (e) {
-            toast(errorMessage(e, 'Không cập nhật được giỏ hàng'), 'error');
+            toast(errorMessage(e, t('cart.updateFailed')), 'error');
         } finally {
             setBusy(null);
         }
@@ -50,7 +52,7 @@ export default function CartPage() {
 
     const checkout = () => {
         if (!isAuthenticated) {
-            toast('Vui lòng đăng nhập để thanh toán', 'info');
+            toast(t('cart.loginToCheckout'), 'info');
             router.push('/auth/login?redirect=/checkout');
             return;
         }
@@ -72,9 +74,9 @@ export default function CartPage() {
                 <div className="card">
                     <EmptyState
                         icon={<ShoppingBag className="h-9 w-9" />}
-                        title="Giỏ hàng đang trống"
-                        description="Khám phá các mẫu giày mới nhất và thêm vào giỏ nhé."
-                        action={<LinkButton href="/products">Mua sắm ngay</LinkButton>}
+                        title={t('cart.empty')}
+                        description={t('cart.emptyBody')}
+                        action={<LinkButton href="/products">{t('cart.shopNow')}</LinkButton>}
                     />
                 </div>
                 <RecentlyViewed className="mt-12" />
@@ -83,10 +85,10 @@ export default function CartPage() {
     }
 
     return (
-        <div className="container-page py-6">
-            <Breadcrumb items={[{ label: 'Trang chủ', href: '/' }, { label: 'Giỏ hàng' }]} />
+        <div className="container-page py-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-6">
+            <Breadcrumb items={[{ label: t('common.home'), href: '/' }, { label: t('cart.title') }]} />
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">
-                Giỏ hàng <span className="text-base font-medium text-muted">({count} sản phẩm)</span>
+                {t('cart.title')} <span className="text-base font-medium text-muted">{t('cart.itemCount', { n: count })}</span>
             </h1>
 
             <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] [&>*]:min-w-0">
@@ -106,14 +108,14 @@ export default function CartPage() {
                                         </Link>
                                         <button
                                             onClick={() => run(it.variantId, () => dispatch(removeFromCart(it.variantId)).unwrap())}
-                                            className="rounded-full p-2 text-muted hover:bg-coral-50 hover:text-coral-600"
-                                            aria-label={`Xóa ${it.name}`}
+                                            className="-mr-2 -mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted hover:bg-coral-50 hover:text-coral-600"
+                                            aria-label={t('cart.remove', { name: it.name })}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
                                     <p className="mt-0.5 text-sm text-muted">Size {it.size}</p>
-                                    {it.stock > 0 && it.stock <= 5 && <p className="text-xs font-medium text-coral-600">Chỉ còn {it.stock} đôi</p>}
+                                    {it.stock > 0 && it.stock <= 5 && <p className="text-xs font-medium text-coral-600">{t('cart.onlyLeft', { n: it.stock })}</p>}
                                     <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-2">
                                         <QuantityInput
                                             size="sm"
@@ -124,7 +126,7 @@ export default function CartPage() {
                                         />
                                         <div className="text-right">
                                             <p className="font-bold">{formatVND(it.price * it.quantity)}</p>
-                                            {it.quantity > 1 && <p className="text-xs text-muted">{formatVND(it.price)} / đôi</p>}
+                                            {it.quantity > 1 && <p className="text-xs text-muted">{t('cart.perPair', { v: formatVND(it.price) })}</p>}
                                         </div>
                                     </div>
                                 </div>
@@ -135,39 +137,50 @@ export default function CartPage() {
 
                 <aside className="lg:sticky lg:top-36 lg:self-start">
                     <div className="card space-y-5 p-5">
-                        <h2 className="text-lg font-bold">Tóm tắt đơn hàng</h2>
+                        <h2 className="text-lg font-bold">{t('cart.summary')}</h2>
                         <VoucherPicker subtotal={subtotal} applied={voucher} onChange={setVoucher} />
                         <dl className="space-y-2.5 border-t border-line pt-4 text-sm">
                             <div className="flex justify-between">
-                                <dt className="text-muted">Tạm tính</dt>
+                                <dt className="text-muted">{t('cart.subtotal')}</dt>
                                 <dd className="font-semibold">{formatVND(subtotal)}</dd>
                             </div>
                             {discount > 0 && (
                                 <div className="flex justify-between text-brand-700">
-                                    <dt>Giảm giá ({voucher?.code})</dt>
+                                    <dt>{t('cart.discount', { code: voucher?.code ?? '' })}</dt>
                                     <dd className="font-semibold">-{formatVND(discount)}</dd>
                                 </div>
                             )}
                             <div className="flex justify-between">
-                                <dt className="text-muted">Phí vận chuyển</dt>
-                                <dd className="text-muted">Tính ở bước thanh toán</dd>
+                                <dt className="text-muted">{t('cart.shipping')}</dt>
+                                <dd className="text-muted">{t('cart.shippingLater')}</dd>
                             </div>
                             <div className="flex items-baseline justify-between border-t border-line pt-3">
-                                <dt className="font-bold">Tạm tính sau giảm</dt>
+                                <dt className="font-bold">{t('cart.afterDiscount')}</dt>
                                 <dd className="text-2xl font-extrabold text-coral-500">{formatVND(subtotal - discount)}</dd>
                             </div>
                         </dl>
                         <Button size="lg" className="w-full" onClick={checkout}>
-                            Tiến hành thanh toán <ArrowRight className="h-4 w-4" />
+                            {t('cart.checkout')} <ArrowRight className="h-4 w-4" />
                         </Button>
                         <p className="flex items-center justify-center gap-1.5 text-xs text-muted">
-                            <Lock className="h-3.5 w-3.5" /> Thanh toán an toàn · Thanh toán khi nhận hàng (COD)
+                            <Lock className="h-3.5 w-3.5" /> {t('cart.secure')}
                         </p>
                     </div>
                     <Link href="/products" className="mt-4 block text-center text-sm font-semibold text-brand-600 hover:underline">
-                        ← Tiếp tục mua sắm
+                        {t('cart.continue')}
                     </Link>
                 </aside>
+            </div>
+
+            {/* Thanh thanh toán cố định trên điện thoại: không phải cuộn xuống cuối trang mới thấy tổng tiền */}
+            <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-line bg-surface/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+                <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted">{t('cart.afterDiscount')}</p>
+                    <p className="truncate text-lg font-extrabold text-coral-500">{formatVND(subtotal - discount)}</p>
+                </div>
+                <Button className="h-12 px-6" onClick={checkout}>
+                    {t('checkout.title')} <ArrowRight className="h-4 w-4" />
+                </Button>
             </div>
         </div>
     );

@@ -8,8 +8,10 @@ import { useAppSelector } from '@/store/redux/hooks';
 import { ProductGrid } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui/misc';
 import { LinkButton } from '@/components/ui/Button';
+import { useT } from '@/lib/i18n/client';
 
 export default function WishlistPage() {
+    const t = useT();
     const ids = useAppSelector((s) => s.wishlist.ids);
     const [products, setProducts] = useState<ProductResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,15 +30,15 @@ export default function WishlistPage() {
     return (
         <div>
             <h1 className="mb-4 text-xl font-bold">
-                Sản phẩm yêu thích {!loading && <span className="text-base font-medium text-muted">({visible.length})</span>}
+                {t('wishlist.title')} {!loading && <span className="text-base font-medium text-muted">({visible.length})</span>}
             </h1>
             {!loading && visible.length === 0 ? (
                 <div className="card">
                     <EmptyState
                         icon={<Heart className="h-9 w-9" />}
-                        title="Chưa có sản phẩm yêu thích"
-                        description="Nhấn biểu tượng trái tim trên sản phẩm để lưu lại xem sau."
-                        action={<LinkButton href="/products">Khám phá sản phẩm</LinkButton>}
+                        title={t('wishlist.empty')}
+                        description={t('wishlist.emptyBody')}
+                        action={<LinkButton href="/products">{t('wishlist.explore')}</LinkButton>}
                     />
                 </div>
             ) : (

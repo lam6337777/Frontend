@@ -8,11 +8,13 @@ import { cn, discountPercent, formatCompact, productImages, totalStock, PLACEHOL
 import { Price } from '@/components/ui/Price';
 import { Rating } from '@/components/ui/Rating';
 import { WishlistButton } from './WishlistButton';
+import { useT } from '@/lib/i18n/client';
 
 const NEW_DAYS = 21;
 
 export function ProductCard({ product, className }: { product: ProductResponse; className?: string }) {
     const ref = useRef<HTMLAnchorElement>(null);
+    const t = useT();
     const images = productImages(product);
     const pct = discountPercent(product);
     const soldOut = totalStock(product) === 0;
@@ -40,13 +42,14 @@ export function ProductCard({ product, className }: { product: ProductResponse; 
             onMouseMove={onMove}
             onMouseLeave={onLeave}
             className={cn(
-                'group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-transparent',
+                'group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-card ring-1 ring-transparent',
                 'transition-[transform,box-shadow] duration-300 ease-out [transform:perspective(900px)_rotateX(var(--rx,0))_rotateY(var(--ry,0))]',
                 'hover:shadow-lift hover:ring-brand-100',
                 className
             )}
         >
-            <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-mint-100 to-white">
+            {/* Ảnh giày chụp trên nền trắng → khung ảnh giữ nền trắng cả ở chế độ tối */}
+            <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-mint-100 to-white dark:bg-none dark:bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={images[0]}
@@ -72,17 +75,17 @@ export function ProductCard({ product, className }: { product: ProductResponse; 
 
                 <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1.5">
                     {pct > 0 && <span className="rounded-lg bg-coral-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">-{pct}%</span>}
-                    {isNew && <span className="rounded-lg bg-brand-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">Mới</span>}
+                    {isNew && <span className="rounded-lg bg-brand-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">{t('product.new')}</span>}
                     {product.model3dUrl && (
-                        <span className="flex items-center gap-1 rounded-lg bg-ink/85 px-2 py-0.5 text-xs font-bold text-white backdrop-blur">
+                        <span className="flex items-center gap-1 rounded-lg bg-night/85 px-2 py-0.5 text-xs font-bold text-white backdrop-blur">
                             <Box className="h-3 w-3" /> 3D
                         </span>
                     )}
                 </div>
                 <WishlistButton productId={product.id} className="absolute right-2.5 top-2.5" />
                 {soldOut && (
-                    <span className="absolute inset-x-0 bottom-0 bg-ink/70 py-1.5 text-center text-xs font-bold uppercase tracking-wider text-white">
-                        Hết hàng
+                    <span className="absolute inset-x-0 bottom-0 bg-night/70 py-1.5 text-center text-xs font-bold uppercase tracking-wider text-white">
+                        {t('product.soldOut')}
                     </span>
                 )}
             </div>
@@ -90,16 +93,16 @@ export function ProductCard({ product, className }: { product: ProductResponse; 
             <div className="flex flex-1 flex-col gap-1.5 p-3.5">
                 {product.brandName && <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">{product.brandName}</p>}
                 <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-ink group-hover:text-brand-700">{product.name}</h3>
-                <div className="flex items-center gap-1.5 text-xs text-muted">
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted">
                     {product.reviewCount > 0 ? (
                         <>
                             <Rating value={product.avgRating} size={12} />
                             <span>({product.reviewCount})</span>
                         </>
                     ) : (
-                        <span>Chưa có đánh giá</span>
+                        <span>{t('product.noReviews')}</span>
                     )}
-                    {product.totalSold > 0 && <span className="ml-auto">Đã bán {formatCompact(product.totalSold)}</span>}
+                    {product.totalSold > 0 && <span className="ml-auto whitespace-nowrap">{t('product.sold', { n: formatCompact(product.totalSold) })}</span>}
                 </div>
                 <Price originalPrice={product.originalPrice} salePrice={product.salePrice} size="sm" className="mt-auto pt-1" />
             </div>
@@ -109,7 +112,7 @@ export function ProductCard({ product, className }: { product: ProductResponse; 
 
 export function ProductCardSkeleton() {
     return (
-        <div className="overflow-hidden rounded-2xl bg-white shadow-card">
+        <div className="overflow-hidden rounded-2xl bg-surface shadow-card">
             <div className="skeleton aspect-square rounded-none" />
             <div className="space-y-2 p-3.5">
                 <div className="skeleton h-3 w-16" />

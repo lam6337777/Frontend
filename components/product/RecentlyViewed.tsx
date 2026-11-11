@@ -7,9 +7,11 @@ import { ProductResponse } from '@/types/product';
 import { getRecentlyViewed } from '@/lib/recentlyViewed';
 import { SectionHeading } from '@/components/ui/misc';
 import { ProductCarousel } from './ProductCarousel';
+import { useT } from '@/lib/i18n/client';
 
 /** Sản phẩm đã xem gần đây (lưu trong trình duyệt). Ẩn nếu chưa xem sản phẩm nào. */
 export function RecentlyViewed({ excludeId, className }: { excludeId?: string; className?: string }) {
+    const t = useT();
     const [products, setProducts] = useState<ProductResponse[]>([]);
 
     useEffect(() => {
@@ -24,7 +26,7 @@ export function RecentlyViewed({ excludeId, className }: { excludeId?: string; c
     if (!products.length) return null;
     return (
         <section className={className}>
-            <SectionHeading title="Đã xem gần đây" icon={<History className="h-6 w-6 text-brand-500" />} />
+            <SectionHeading title={t('product.recentlyViewed')} icon={<History className="h-6 w-6 text-brand-500" />} />
             <ProductCarousel products={products} />
         </section>
     );

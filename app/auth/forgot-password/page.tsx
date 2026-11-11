@@ -9,10 +9,12 @@ import { AuthShell, PasswordField } from '@/components/auth/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { errorMessage } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
     const toast = useToast();
+    const t = useT();
     const [step, setStep] = useState<'email' | 'reset'>('email');
     const [email, setEmail] = useState('');
     const [otpCode, setOtpCode] = useState('');
@@ -29,9 +31,9 @@ export default function ForgotPasswordPage() {
         try {
             await authService.forgotPassword(email.trim());
             setStep('reset');
-            toast('Đã gửi mã xác thực, vui lòng kiểm tra email');
+            toast(t('auth.otpSent'));
         } catch (err) {
-            setError(errorMessage(err, 'Không gửi được mã xác thực'));
+            setError(errorMessage(err, t('auth.otpFailed')));
         } finally {
             setLoading(false);
         }
@@ -40,14 +42,14 @@ export default function ForgotPasswordPage() {
     const reset = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (password !== confirm) return setError('Mật khẩu xác nhận không khớp');
+        if (password !== confirm) return setError(t('auth.mismatch'));
         setLoading(true);
         try {
             await authService.resetPassword({ email: email.trim(), otpCode: otpCode.trim(), newPassword: password });
-            toast('Đặt lại mật khẩu thành công, vui lòng đăng nhập');
+            toast(t('auth.resetDone'));
             router.push('/auth/login');
         } catch (err) {
-            setError(errorMessage(err, 'Đặt lại mật khẩu thất bại'));
+            setError(errorMessage(err, t('auth.resetFailed')));
         } finally {
             setLoading(false);
         }
@@ -55,8 +57,8 @@ export default function ForgotPasswordPage() {
 
     return (
         <AuthShell
-            title="Quên mật khẩu"
-            subtitle={step === 'email' ? 'Nhập email đã đăng ký, chúng tôi sẽ gửi mã xác thực' : `Nhập mã đã gửi tới ${email}`}
+            title={t('auth.forgotTitle')}
+            subtitle={step === 'email' ? t('auth.forgotEmail') : t('auth.forgotCode', { email })}
         >
             {step === 'email' ? (
                 <form onSubmit={requestOtp} className="space-y-4">
@@ -66,16 +68,16 @@ export default function ForgotPasswordPage() {
                     </label>
                     {error && <p className="rounded-xl bg-coral-50 px-4 py-3 text-sm font-medium text-coral-600">{error}</p>}
                     <Button type="submit" size="lg" className="w-full" loading={loading}>
-                        Gửi mã xác thực
+                        {t('auth.sendOtp')}
                     </Button>
                 </form>
             ) : (
                 <form onSubmit={reset} className="space-y-4">
                     <div className="flex items-center gap-3 rounded-2xl bg-brand-50 p-4 text-sm text-brand-800">
-                        <MailCheck className="h-5 w-5 shrink-0" /> Mã xác thực đã được gửi. Kiểm tra cả thư mục spam nếu chưa thấy.
+                        <MailCheck className="h-5 w-5 shrink-0" /> {t('auth.otpNotice')}
                     </div>
                     <label className="block">
-                        <span className="mb-1.5 block text-sm font-medium">Mã xác thực (OTP)</span>
+                        <span className="mb-1.5 block text-sm font-medium">{t('auth.otp')}</span>
                         <input
                             className="input text-center font-mono text-lg tracking-[0.5em]"
                             inputMode="numeric"
@@ -85,20 +87,20 @@ export default function ForgotPasswordPage() {
                             required
                         />
                     </label>
-                    <PasswordField label="Mật khẩu mới" value={password} onChange={setPassword} autoComplete="new-password" show={show} onToggle={() => setShow(!show)} />
-                    <PasswordField label="Nhập lại mật khẩu mới" value={confirm} onChange={setConfirm} autoComplete="new-password" show={show} onToggle={() => setShow(!show)} />
+                    <PasswordField label={t('auth.newPassword')} value={password} onChange={setPassword} autoComplete="new-password" show={show} onToggle={() => setShow(!show)} />
+                    <PasswordField label={t('auth.confirmPassword')} value={confirm} onChange={setConfirm} autoComplete="new-password" show={show} onToggle={() => setShow(!show)} />
                     {error && <p className="rounded-xl bg-coral-50 px-4 py-3 text-sm font-medium text-coral-600">{error}</p>}
                     <Button type="submit" size="lg" className="w-full" loading={loading}>
-                        Đặt lại mật khẩu
+                        {t('auth.reset')}
                     </Button>
-                    <button type="button" onClick={() => requestOtp()} className="w-full text-sm font-semibold text-brand-600 hover:underline" disabled={loading}>
-                        Gửi lại mã
+                    <button type="button" onClick={() => requestOtp()} className="w-full py-2 text-sm font-semibold text-brand-600 hover:underline" disabled={loading}>
+                        {t('auth.resend')}
                     </button>
                 </form>
             )}
             <p className="mt-6 text-center text-sm text-muted">
                 <Link href="/auth/login" className="font-semibold text-brand-600 hover:underline">
-                    ← Quay lại đăng nhập
+                    {t('auth.backToLogin')}
                 </Link>
             </p>
         </AuthShell>

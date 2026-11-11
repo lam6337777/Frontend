@@ -9,13 +9,15 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { cn, errorMessage, PLACEHOLDER_IMAGE, resolveAssetUrl } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
+import type { TKey } from '@/lib/i18n/core';
 
 const DAY = 86_400_000;
 const WINDOW: Record<ReturnRequestType, number> = { RETURN: 7, EXCHANGE: 7, WARRANTY: 30 };
-const TYPES: { value: ReturnRequestType; label: string; desc: string }[] = [
-    { value: ReturnRequestType.RETURN, label: 'Trả hàng', desc: 'Hoàn tiền, trong 7 ngày' },
-    { value: ReturnRequestType.EXCHANGE, label: 'Đổi size', desc: 'Đổi sang size khác, trong 7 ngày' },
-    { value: ReturnRequestType.WARRANTY, label: 'Bảo hành', desc: 'Lỗi keo, chỉ — trong 30 ngày' },
+const TYPES: { value: ReturnRequestType; label: TKey; desc: TKey }[] = [
+    { value: ReturnRequestType.RETURN, label: 'returns.optReturn', desc: 'returns.optReturnDesc' },
+    { value: ReturnRequestType.EXCHANGE, label: 'returns.optExchange', desc: 'returns.optExchangeDesc' },
+    { value: ReturnRequestType.WARRANTY, label: 'returns.optWarranty', desc: 'returns.optWarrantyDesc' },
 ];
 
 /** Số ngày kể từ khi giao hàng (giống cách backend tính) */
@@ -34,6 +36,7 @@ export function canRequestReturn(order: OrderResponse) {
 
 export function ReturnRequestModal({ order, open, onClose, onDone }: { order: OrderResponse; open: boolean; onClose: () => void; onDone: () => void }) {
     const toast = useToast();
+    const t = useT();
     const days = daysSinceDelivered(order);
     const [type, setType] = useState<ReturnRequestType>(ReturnRequestType.RETURN);
     const [itemIds, setItemIds] = useState<number[]>([]);
@@ -72,9 +75,9 @@ export function ReturnRequestModal({ order, open, onClose, onDone }: { order: Or
     };
 
     const submit = async () => {
-        if (!itemIds.length) return toast('Chọn ít nhất 1 sản phẩm', 'info');
-        if (reason.trim().length < 10) return toast('Vui lòng mô tả lý do (ít nhất 10 ký tự)', 'info');
-        if (type === ReturnRequestType.EXCHANGE && !exchangeVariantId) return toast('Chọn size muốn đổi', 'info');
+        if (!itemIds.length) return toast(t('returns.pickItem'), 'info');
+        if (reason.trim().length < 10) return toast(t('returns.reasonShort'), 'info');
+        if (type === ReturnRequestType.EXCHANGE && !exchangeVariantId) return toast(t('returns.pickSize'), 'info');
         setSaving(true);
         try {
             await orderService.createReturnRequest({
@@ -84,11 +87,11 @@ export function ReturnRequestModal({ order, open, onClose, onDone }: { order: Or
                 orderItemIds: itemIds,
                 exchangeVariantId: exchangeVariantId || undefined,
             });
-            toast('Đã gửi yêu cầu. Shop sẽ phản hồi sớm nhất!');
+            toast(t('returns.sent'));
             onDone();
             onClose();
         } catch (e) {
-            toast(errorMessage(e, 'Không gửi được yêu cầu'), 'error');
+            toast(errorMessage(e, t('returns.sendFailed')), 'error');
         } finally {
             setSaving(false);
         }
@@ -99,44 +102,44 @@ export function ReturnRequestModal({ order, open, onClose, onDone }: { order: Or
             open={open}
             onClose={onClose}
             size="lg"
-            title="Yêu cầu đổi / trả / bảo hành"
+            title={t('returns.modalTitle')}
             footer={
                 <>
                     <Button variant="outline" onClick={onClose}>
-                        Hủy
+                        {t('returns.cancel')}
                     </Button>
                     <Button onClick={submit} loading={saving}>
-                        Gửi yêu cầu
+                        {t('returns.send')}
                     </Button>
                 </>
             }
         >
             <div className="space-y-5">
                 <div className="grid gap-2 sm:grid-cols-3">
-                    {TYPES.map((t) => {
-                        const disabled = days > WINDOW[t.value];
+                    {TYPES.map((opt) => {
+                        const disabled = days > WINDOW[opt.value];
                         return (
                             <button
-                                key={t.value}
+                                key={opt.value}
                                 disabled={disabled}
                                 onClick={() => {
-                                    setType(t.value);
+                                    setType(opt.value);
                                     setItemIds([]);
                                 }}
                                 className={cn(
                                     'rounded-2xl border-2 p-3 text-left transition disabled:cursor-not-allowed disabled:opacity-40',
-                                    type === t.value ? 'border-brand-500 bg-brand-50' : 'border-line hover:border-brand-200'
+                                    type === opt.value ? 'border-brand-500 bg-brand-50' : 'border-line hover:border-brand-200'
                                 )}
                             >
-                                <p className="font-semibold">{t.label}</p>
-                                <p className="text-xs text-muted">{disabled ? 'Đã quá thời hạn' : t.desc}</p>
+                                <p className="font-semibold">{t(opt.label)}</p>
+                                <p className="text-xs text-muted">{disabled ? t('returns.expired') : t(opt.desc)}</p>
                             </button>
                         );
                     })}
                 </div>
 
                 <div>
-                    <p className="mb-2 text-sm font-semibold">{type === ReturnRequestType.EXCHANGE ? 'Chọn 1 sản phẩm muốn đổi' : 'Chọn sản phẩm'}</p>
+                    <p className="mb-2 text-sm font-semibold">{type === ReturnRequestType.EXCHANGE ? t('returns.pickOneToExchange') : t('returns.pickProducts')}</p>
                     <div className="space-y-2">
                         {activeItems.map((it) => (
                             <label
@@ -165,9 +168,9 @@ export function ReturnRequestModal({ order, open, onClose, onDone }: { order: Or
 
                 {exchangeItem && (
                     <div>
-                        <p className="mb-2 text-sm font-semibold">Đổi sang size</p>
+                        <p className="mb-2 text-sm font-semibold">{t('returns.exchangeTo')}</p>
                         {variants.length === 0 ? (
-                            <p className="text-sm text-muted">Sản phẩm hiện không còn size khác để đổi.</p>
+                            <p className="text-sm text-muted">{t('returns.noOtherSize')}</p>
                         ) : (
                             <div className="flex flex-wrap gap-2">
                                 {variants.map((v) => (
@@ -188,13 +191,13 @@ export function ReturnRequestModal({ order, open, onClose, onDone }: { order: Or
                 )}
 
                 <label className="block">
-                    <span className="mb-1.5 block text-sm font-semibold">Lý do</span>
+                    <span className="mb-1.5 block text-sm font-semibold">{t('returns.reasonLabel')}</span>
                     <textarea
                         className="input min-h-24"
                         maxLength={1000}
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        placeholder="VD: Giày bị chật ở mũi, muốn đổi lên 1 size…"
+                        placeholder={t('returns.reasonPlaceholder')}
                     />
                 </label>
             </div>

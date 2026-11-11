@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { Box, ChevronLeft, ChevronRight, Expand, ImageIcon } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { cn, PLACEHOLDER_IMAGE } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 const Product3DViewer = dynamic(() => import('./Product3DViewer').then((m) => m.Product3DViewer), {
     ssr: false,
@@ -23,6 +24,7 @@ interface Props {
  * - Chế độ 3D: chỉ hiện khi sản phẩm có file mô hình .glb.
  */
 export function ProductGallery({ images, name, model3dUrl }: Props) {
+    const t = useT();
     const [mode, setMode] = useState<'image' | '3d'>(model3dUrl ? '3d' : 'image');
     const [index, setIndex] = useState(0);
     const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
@@ -56,7 +58,7 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
     const tab = (active: boolean) =>
         cn(
             'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition',
-            active ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'
+            active ? 'bg-night text-white shadow-sm' : 'text-muted hover:text-ink'
         );
 
     return (
@@ -69,10 +71,10 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
                             key={src + i}
                             onClick={() => go(i)}
                             className={cn(
-                                'h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-white ring-2 transition md:h-20 md:w-20',
+                                'h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface ring-2 transition md:h-20 md:w-20',
                                 i === index ? 'ring-brand-500' : 'ring-transparent opacity-70 hover:opacity-100'
                             )}
-                            aria-label={`Xem ảnh ${i + 1}`}
+                            aria-label={t('detail.viewImage', { n: i + 1 })}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
@@ -82,9 +84,9 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
             )}
 
             <div className="relative min-w-0 flex-1">
-                <div className="relative aspect-square overflow-hidden rounded-3xl bg-white shadow-card">
+                <div className="relative aspect-square overflow-hidden rounded-3xl bg-surface shadow-card">
                     {mode === '3d' && model3dUrl ? (
-                        <Product3DViewer src={model3dUrl} poster={images[0]} alt={`Mô hình 3D ${name}`} />
+                        <Product3DViewer src={model3dUrl} poster={images[0]} alt={t('detail.model3d', { name })} />
                     ) : (
                         <>
                             <div ref={trackRef} onScroll={onScroll} className="scrollbar-none flex h-full snap-x snap-mandatory overflow-x-auto md:overflow-hidden">
@@ -99,7 +101,7 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={src}
-                                            alt={`${name} - ảnh ${i + 1}`}
+                                            alt={t('detail.imageAlt', { name, n: i + 1 })}
                                             loading={i === 0 ? 'eager' : 'lazy'}
                                             onError={(e) => ((e.target as HTMLImageElement).src = PLACEHOLDER_IMAGE)}
                                             className="h-full w-full object-cover transition-transform duration-200 ease-out"
@@ -116,27 +118,27 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
                                 <>
                                     <button
                                         onClick={() => go(index - 1)}
-                                        className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 shadow-card hover:text-brand-600 md:grid"
-                                        aria-label="Ảnh trước"
+                                        className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-surface/90 shadow-card hover:text-brand-600 md:grid"
+                                        aria-label={t('detail.prevImage')}
                                     >
                                         <ChevronLeft className="h-5 w-5" />
                                     </button>
                                     <button
                                         onClick={() => go(index + 1)}
-                                        className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 shadow-card hover:text-brand-600 md:grid"
-                                        aria-label="Ảnh sau"
+                                        className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-surface/90 shadow-card hover:text-brand-600 md:grid"
+                                        aria-label={t('detail.nextImage')}
                                     >
                                         <ChevronRight className="h-5 w-5" />
                                     </button>
-                                    <span className="absolute bottom-3 left-3 rounded-full bg-ink/70 px-2.5 py-1 text-xs font-semibold text-white md:hidden">
+                                    <span className="absolute bottom-3 left-3 rounded-full bg-night/70 px-2.5 py-1 text-xs font-semibold text-white md:hidden">
                                         {index + 1}/{images.length}
                                     </span>
                                 </>
                             )}
                             <button
                                 onClick={() => setLightbox(true)}
-                                className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-card hover:text-brand-600"
-                                aria-label="Xem ảnh toàn màn hình"
+                                className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-surface/90 shadow-card hover:text-brand-600"
+                                aria-label={t('detail.fullscreenImage')}
                             >
                                 <Expand className="h-4 w-4" />
                             </button>
@@ -146,9 +148,9 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
 
                 {/* Chuyển Ảnh / 3D */}
                 {model3dUrl && (
-                    <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1 rounded-full bg-white/90 p-1 shadow-card backdrop-blur">
+                    <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1 rounded-full bg-surface/90 p-1 shadow-card backdrop-blur">
                         <button className={tab(mode === 'image')} onClick={() => setMode('image')}>
-                            <ImageIcon className="h-4 w-4" /> Ảnh
+                            <ImageIcon className="h-4 w-4" /> {t('detail.tabImages')}
                         </button>
                         <button className={tab(mode === '3d')} onClick={() => setMode('3d')}>
                             <Box className="h-4 w-4" /> Xem 3D
@@ -165,15 +167,15 @@ export function ProductGallery({ images, name, model3dUrl }: Props) {
                         <>
                             <button
                                 onClick={() => setIndex((index - 1 + images.length) % images.length)}
-                                className="absolute left-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white shadow-lift"
-                                aria-label="Ảnh trước"
+                                className="absolute left-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-lift"
+                                aria-label={t('detail.prevImage')}
                             >
                                 <ChevronLeft className="h-5 w-5" />
                             </button>
                             <button
                                 onClick={() => setIndex((index + 1) % images.length)}
-                                className="absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white shadow-lift"
-                                aria-label="Ảnh sau"
+                                className="absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-lift"
+                                aria-label={t('detail.nextImage')}
                             >
                                 <ChevronRight className="h-5 w-5" />
                             </button>

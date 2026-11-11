@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/Button';
 import { RatingInput } from '@/components/ui/Rating';
 import { useToast } from '@/components/ui/Toast';
 import { errorMessage, PLACEHOLDER_IMAGE, resolveAssetUrl } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
-const LABEL = ['', 'Rất tệ', 'Không hài lòng', 'Bình thường', 'Hài lòng', 'Tuyệt vời'];
+const LABEL = ['', 'reviewModal.labels1', 'reviewModal.labels2', 'reviewModal.labels3', 'reviewModal.labels4', 'reviewModal.labels5'] as const;
 
 export function ReviewModal({
     item,
@@ -23,6 +24,7 @@ export function ReviewModal({
     onDone: () => void;
 }) {
     const toast = useToast();
+    const t = useT();
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
     const [saving, setSaving] = useState(false);
@@ -37,11 +39,11 @@ export function ReviewModal({
         setSaving(true);
         try {
             await reviewService.createReview({ productId: item.productId, orderId, rating, comment: comment.trim() });
-            toast('Cảm ơn bạn đã đánh giá!');
+            toast(t('reviewModal.thanks'));
             onDone();
             onClose();
         } catch (e) {
-            toast(errorMessage(e, 'Không gửi được đánh giá'), 'error');
+            toast(errorMessage(e, t('reviewModal.failed')), 'error');
         } finally {
             setSaving(false);
         }
@@ -51,14 +53,14 @@ export function ReviewModal({
         <Modal
             open={!!item}
             onClose={onClose}
-            title="Đánh giá sản phẩm"
+            title={t('reviewModal.title')}
             footer={
                 <>
                     <Button variant="outline" onClick={onClose}>
-                        Để sau
+                        {t('reviewModal.later')}
                     </Button>
                     <Button onClick={submit} loading={saving}>
-                        Gửi đánh giá
+                        {t('reviewModal.submit')}
                     </Button>
                 </>
             }
@@ -75,12 +77,12 @@ export function ReviewModal({
                     </div>
                     <div className="flex flex-col items-center gap-1">
                         <RatingInput value={rating} onChange={setRating} />
-                        <p className="text-sm font-semibold text-amber-600">{LABEL[rating]}</p>
+                        <p className="text-sm font-semibold text-amber-600 dark:text-amber-300">{LABEL[rating] ? t(LABEL[rating] as 'reviewModal.labels1') : ''}</p>
                     </div>
                     <textarea
                         className="input min-h-28"
                         maxLength={1000}
-                        placeholder="Chia sẻ cảm nhận về form giày, chất liệu, độ êm…"
+                        placeholder={t('reviewModal.placeholder')}
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                     />

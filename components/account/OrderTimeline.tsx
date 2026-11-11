@@ -1,7 +1,8 @@
 import { Check, ClipboardCheck, Home, Package, Truck, XCircle } from 'lucide-react';
 import { OrderResponse, OrderStatus, StatusHistory } from '@/types/order';
-import { MAIN_STEPS, ORDER_STATUS } from '@/lib/orderStatus';
+import { MAIN_STEPS, ORDER_STATUS, translateNote } from '@/lib/orderStatus';
 import { cn, formatDate } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n/client';
 
 const ICON = {
     PENDING: ClipboardCheck,
@@ -17,6 +18,7 @@ function historyOf(order: OrderResponse): StatusHistory[] {
 }
 
 export function OrderTimeline({ order }: { order: OrderResponse }) {
+    const { t, locale } = useI18n();
     const history = historyOf(order);
     const firstAt = (s: OrderStatus) => history.find((h) => h.status === s)?.createdAt;
     const cancelled = order.status === OrderStatus.CANCELLED;
@@ -40,13 +42,13 @@ export function OrderTimeline({ order }: { order: OrderResponse }) {
                             )}
                             <span
                                 className={cn(
-                                    'relative z-10 grid h-10 w-10 place-items-center rounded-full ring-4 ring-white transition',
+                                    'relative z-10 grid h-10 w-10 place-items-center rounded-full ring-4 ring-surface transition',
                                     done ? 'bg-brand-500 text-white' : 'bg-mint-100 text-muted'
                                 )}
                             >
                                 <Icon className="h-5 w-5" />
                             </span>
-                            <p className={cn('mt-2 text-xs font-semibold sm:text-sm', done ? 'text-ink' : 'text-muted')}>{ORDER_STATUS[s].label}</p>
+                            <p className={cn('mt-2 text-xs font-semibold sm:text-sm', done ? 'text-ink' : 'text-muted')}>{t(ORDER_STATUS[s].label)}</p>
                             {firstAt(s) && <p className="text-[11px] text-muted">{formatDate(firstAt(s), true)}</p>}
                         </li>
                     );
@@ -57,19 +59,19 @@ export function OrderTimeline({ order }: { order: OrderResponse }) {
                 <div className="flex items-center gap-3 rounded-2xl bg-slate-100 p-4 text-sm">
                     <XCircle className="h-5 w-5 text-slate-500" />
                     <span>
-                        Đơn hàng đã bị hủy {firstAt(OrderStatus.CANCELLED) && `lúc ${formatDate(firstAt(OrderStatus.CANCELLED), true)}`}
+                        {firstAt(OrderStatus.CANCELLED) ? t('orders.timelineCancelledAt', { d: formatDate(firstAt(OrderStatus.CANCELLED), true) }) : t('orders.timelineCancelled')}
                     </span>
                 </div>
             )}
 
             <div>
-                <h3 className="mb-3 text-sm font-bold">Lịch sử cập nhật</h3>
+                <h3 className="mb-3 text-sm font-bold">{t('orders.history')}</h3>
                 <ol className="relative space-y-4 border-l-2 border-line pl-5">
                     {[...history].reverse().map((h, i) => (
                         <li key={i} className="relative">
-                            <span className={cn('absolute -left-[27px] top-1 h-3 w-3 rounded-full ring-4 ring-white', i === 0 ? 'bg-brand-500' : 'bg-line')} />
-                            <p className={cn('text-sm font-semibold', i === 0 ? 'text-brand-700' : '')}>{ORDER_STATUS[h.status]?.label || h.status}</p>
-                            {h.note && <p className="text-sm text-muted">{h.note}</p>}
+                            <span className={cn('absolute -left-[27px] top-1 h-3 w-3 rounded-full ring-4 ring-surface', i === 0 ? 'bg-brand-500' : 'bg-line')} />
+                            <p className={cn('text-sm font-semibold', i === 0 ? 'text-brand-700' : '')}>{ORDER_STATUS[h.status] ? t(ORDER_STATUS[h.status].label) : h.status}</p>
+                            {h.note && <p className="text-sm text-muted">{translateNote(h.note, locale)}</p>}
                             <p className="text-xs text-muted">{formatDate(h.createdAt, true)}</p>
                         </li>
                     ))}

@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ChevronRight as Sep, Minus, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 import { TONE_CLASS } from '@/lib/orderStatus';
 
 export function Badge({
@@ -27,7 +30,7 @@ export function Breadcrumb({ items }: { items: { label: string; href?: string }[
                 <React.Fragment key={i}>
                     {i > 0 && <Sep className="h-3.5 w-3.5" aria-hidden />}
                     {it.href ? (
-                        <Link href={it.href} className="hover:text-brand-600">
+                        <Link href={it.href} className="py-1 hover:text-brand-600">
                             {it.label}
                         </Link>
                     ) : (
@@ -54,15 +57,16 @@ export function QuantityInput({
     size?: 'sm' | 'md';
     disabled?: boolean;
 }) {
-    const h = size === 'sm' ? 'h-8 w-8' : 'h-11 w-11';
+    const t = useT();
+    const h = size === 'sm' ? 'h-9 w-9' : 'h-11 w-11';
     return (
-        <div className="inline-flex items-center rounded-xl border border-line bg-white">
+        <div className="inline-flex items-center rounded-xl border border-line bg-surface">
             <button
                 type="button"
                 className={cn(h, 'grid place-items-center rounded-l-xl text-ink hover:bg-mint-100 disabled:opacity-30')}
                 onClick={() => onChange(Math.max(min, value - 1))}
                 disabled={disabled || value <= min}
-                aria-label="Giảm số lượng"
+                aria-label={t('common.decrease')}
             >
                 <Minus className="h-4 w-4" />
             </button>
@@ -72,7 +76,7 @@ export function QuantityInput({
                 className={cn(h, 'grid place-items-center rounded-r-xl text-ink hover:bg-mint-100 disabled:opacity-30')}
                 onClick={() => onChange(Math.min(max, value + 1))}
                 disabled={disabled || value >= max}
-                aria-label="Tăng số lượng"
+                aria-label={t('common.increase')}
             >
                 <Plus className="h-4 w-4" />
             </button>
@@ -110,10 +114,11 @@ export function Pagination({ page, totalPages, onChange }: { page: number; total
         if (i === 0 || i === totalPages - 1 || Math.abs(i - page) <= 1) add(i);
         else add('…');
     }
+    const t = useT();
     const btn = 'grid h-10 min-w-10 place-items-center rounded-xl px-3 text-sm font-semibold transition-colors';
     return (
-        <nav className="flex items-center justify-center gap-1.5" aria-label="Phân trang">
-            <button className={cn(btn, 'hover:bg-white disabled:opacity-30')} onClick={() => onChange(page - 1)} disabled={page === 0} aria-label="Trang trước">
+        <nav className="flex items-center justify-center gap-1.5" aria-label={t('common.pagination')}>
+            <button className={cn(btn, 'hover:bg-surface disabled:opacity-30')} onClick={() => onChange(page - 1)} disabled={page === 0} aria-label={t('common.prevPage')}>
                 <ChevronLeft className="h-4 w-4" />
             </button>
             {pages.map((p, i) =>
@@ -126,17 +131,17 @@ export function Pagination({ page, totalPages, onChange }: { page: number; total
                         key={p}
                         onClick={() => onChange(p)}
                         aria-current={p === page ? 'page' : undefined}
-                        className={cn(btn, p === page ? 'bg-brand-500 text-white shadow-sm shadow-brand-500/30' : 'bg-white text-ink hover:text-brand-600')}
+                        className={cn(btn, p === page ? 'bg-brand-500 text-white shadow-sm shadow-brand-500/30' : 'bg-surface text-ink hover:text-brand-600')}
                     >
                         {p + 1}
                     </button>
                 )
             )}
             <button
-                className={cn(btn, 'hover:bg-white disabled:opacity-30')}
+                className={cn(btn, 'hover:bg-surface disabled:opacity-30')}
                 onClick={() => onChange(page + 1)}
                 disabled={page >= totalPages - 1}
-                aria-label="Trang sau"
+                aria-label={t('common.nextPage')}
             >
                 <ChevronRight className="h-4 w-4" />
             </button>
@@ -148,7 +153,7 @@ export function SectionHeading({
     title,
     subtitle,
     href,
-    linkLabel = 'Xem tất cả',
+    linkLabel,
     icon,
 }: {
     title: string;
@@ -157,6 +162,7 @@ export function SectionHeading({
     linkLabel?: string;
     icon?: React.ReactNode;
 }) {
+    const t = useT();
     return (
         <div className="mb-5 flex items-end justify-between gap-4">
             <div>
@@ -167,8 +173,8 @@ export function SectionHeading({
                 {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
             </div>
             {href && (
-                <Link href={href} className="flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700">
-                    {linkLabel}
+                <Link href={href} className="flex shrink-0 items-center gap-1 py-1 text-sm font-semibold text-brand-600 hover:text-brand-700">
+                    {linkLabel ?? t('common.viewAll')}
                     <ChevronRight className="h-4 w-4" />
                 </Link>
             )}

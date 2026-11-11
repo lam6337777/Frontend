@@ -1,9 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Box, Sparkles, Star, Truck } from 'lucide-react';
 import { buttonClass } from '@/components/ui/Button';
+import { useT } from '@/lib/i18n/client';
 
 export function Hero({ saleCount }: { saleCount: number }) {
+    const t = useT();
     return (
         <section className="container-page grid gap-4 pt-4 md:pt-6 lg:grid-cols-[2fr_1fr]">
             {/* Banner chính */}
@@ -13,30 +17,30 @@ export function Hero({ saleCount }: { saleCount: number }) {
 
                 <div className="relative z-10 max-w-md">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur">
-                        <Sparkles className="h-3.5 w-3.5" /> Bộ sưu tập mới · Xem 3D
+                        <Sparkles className="h-3.5 w-3.5" /> {t('home.heroBadge')}
                     </span>
                     <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-                        Bước nhẹ tênh,
+                        {t('home.heroLine1')}
                         <br />
-                        sống tươi mới.
+                        {t('home.heroLine2')}
                     </h1>
                     <p className="mt-4 text-sm leading-6 text-white/90 sm:text-base">
-                        Giày chạy bộ, tập luyện và sneaker chính hãng. Xoay 360° để xem từng đường may trước khi mua.
+                        {t('home.heroBody')}
                     </p>
                     <div className="mt-7 flex flex-wrap gap-3">
                         <Link href="/products" className={buttonClass('dark', 'lg')}>
-                            Mua ngay <ArrowRight className="h-4 w-4" />
+                            {t('home.shopNow')} <ArrowRight className="h-4 w-4" />
                         </Link>
                         <Link href="/products?onSale=true" className={buttonClass('outline', 'lg', 'border-white/60 bg-white/10 text-white backdrop-blur hover:bg-white hover:text-brand-700')}>
-                            Săn sale
+                            {t('home.huntSale')}
                         </Link>
                     </div>
                     <div className="mt-8 flex items-center gap-5 text-xs font-medium text-white/90">
                         <span className="flex items-center gap-1.5">
-                            <Truck className="h-4 w-4" /> Freeship từ 1 triệu
+                            <Truck className="h-4 w-4" /> {t('home.freeshipFrom')}
                         </span>
                         <span className="flex items-center gap-1.5">
-                            <Star className="h-4 w-4 fill-amber-300 text-amber-300" /> Hàng chính hãng
+                            <Star className="h-4 w-4 fill-amber-300 text-amber-300" /> {t('home.authentic')}
                         </span>
                     </div>
                 </div>
@@ -60,20 +64,20 @@ export function Hero({ saleCount }: { saleCount: number }) {
                     href="/products?onSale=true"
                     className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-coral-500 to-orange-400 p-6 text-white transition hover:shadow-lift"
                 >
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/80">Khuyến mãi</p>
-                    <p className="mt-2 text-3xl font-extrabold">{saleCount > 0 ? `${saleCount} mẫu` : 'Săn deal'}</p>
-                    <p className="mt-1 text-sm text-white/90">đang giảm giá, số lượng có hạn</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/80">{t('home.saleLabel')}</p>
+                    <p className="mt-2 text-3xl font-extrabold">{saleCount > 0 ? t('home.saleCount', { n: saleCount }) : t('home.saleHunt')}</p>
+                    <p className="mt-1 text-sm text-white/90">{t('home.saleBody')}</p>
                     <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold">
-                        Xem ngay <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                        {t('home.viewNow')} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                     </span>
                     <span className="absolute -bottom-6 -right-4 text-[120px] font-black leading-none text-white/15">%</span>
                 </Link>
-                <Link href="#trai-nghiem-3d" className="group relative overflow-hidden rounded-3xl bg-ink p-6 text-white transition hover:shadow-lift">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Công nghệ mới</p>
-                    <p className="mt-2 text-3xl font-extrabold">Xem giày 3D</p>
-                    <p className="mt-1 text-sm text-white/75">Xoay, phóng to, đổi màu ngay trên trình duyệt</p>
+                <Link href="#trai-nghiem-3d" className="group relative overflow-hidden rounded-3xl bg-night p-6 text-white transition hover:shadow-lift">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">{t('home.techLabel')}</p>
+                    <p className="mt-2 text-3xl font-extrabold">{t('home.techTitle')}</p>
+                    <p className="mt-1 text-sm text-white/75">{t('home.techBody')}</p>
                     <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-300">
-                        Trải nghiệm <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                        {t('home.tryIt')} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                     </span>
                     <Box className="absolute -bottom-4 -right-4 h-32 w-32 text-white/10 transition group-hover:rotate-12" strokeWidth={1} />
                 </Link>

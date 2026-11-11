@@ -15,8 +15,10 @@ import { ProductGrid } from '@/components/product/ProductCard';
 import { RecentlyViewed } from '@/components/product/RecentlyViewed';
 import { SectionHeading } from '@/components/ui/misc';
 import { LinkButton } from '@/components/ui/Button';
+import { useT } from '@/lib/i18n/client';
 
 export default function HomePage() {
+    const t = useT();
     const [categories, setCategories] = useState<Category[]>([]);
     const [vouchers, setVouchers] = useState<Voucher[]>([]);
     const [sale, setSale] = useState<ProductResponse[]>([]);
@@ -47,10 +49,10 @@ export default function HomePage() {
 
             {(loading || sale.length > 0) && (
                 <section className="container-page mt-12">
-                    <div className="rounded-3xl bg-gradient-to-br from-coral-50 via-white to-orange-50 p-4 ring-1 ring-coral-100 sm:p-6">
+                    <div className="rounded-3xl bg-gradient-to-br from-coral-50 via-surface to-orange-50 p-4 ring-1 ring-coral-100 dark:to-coral-50 sm:p-6">
                         <SectionHeading
-                            title="Giảm sâu hôm nay"
-                            subtitle="Giá tốt nhất cho các mẫu được yêu thích"
+                            title={t('home.dealsTitle')}
+                            subtitle={t('home.dealsSubtitle')}
                             href="/products?onSale=true"
                             icon={<Flame className="h-6 w-6 text-coral-500" />}
                         />
@@ -61,8 +63,8 @@ export default function HomePage() {
 
             <section className="container-page mt-12">
                 <SectionHeading
-                    title="Bán chạy nhất"
-                    subtitle="Được khách hàng PF chọn nhiều nhất"
+                    title={t('home.bestTitle')}
+                    subtitle={t('home.bestSubtitle')}
                     href="/products?sortBy=best_selling"
                     icon={<TrendingUp className="h-6 w-6 text-brand-500" />}
                 />
@@ -72,11 +74,11 @@ export default function HomePage() {
             <Showcase3D />
 
             <section className="container-page mt-16">
-                <SectionHeading title="Hàng mới về" href="/products?sortBy=newest" icon={<Sparkles className="h-6 w-6 text-brand-500" />} />
+                <SectionHeading title={t('home.newTitle')} href="/products?sortBy=newest" icon={<Sparkles className="h-6 w-6 text-brand-500" />} />
                 <ProductGrid products={fresh} loading={loading} />
                 <div className="mt-8 text-center">
                     <LinkButton href="/products" variant="outline" size="lg">
-                        Khám phá tất cả sản phẩm
+                        {t('home.exploreAll')}
                     </LinkButton>
                 </div>
             </section>

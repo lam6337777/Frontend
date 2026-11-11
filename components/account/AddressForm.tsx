@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { errorMessage } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 const EMPTY: AddressRequest = { fullName: '', phoneNumber: '', province: '', ward: '', addressDetail: '', isDefault: false };
 const PHONE_RE = /^(0|\+84)[0-9]{9}$/;
@@ -27,6 +28,7 @@ export function AddressFormModal({
     defaults?: Partial<AddressRequest>;
 }) {
     const toast = useToast();
+    const t = useT();
     const [form, setForm] = useState<AddressRequest>(EMPTY);
     const [errors, setErrors] = useState<Partial<Record<keyof AddressRequest, string>>>({});
     const [saving, setSaving] = useState(false);
@@ -45,11 +47,11 @@ export function AddressFormModal({
 
     const validate = () => {
         const e: typeof errors = {};
-        if (!form.fullName.trim()) e.fullName = 'Vui lòng nhập họ tên';
-        if (!PHONE_RE.test(form.phoneNumber.trim())) e.phoneNumber = 'Số điện thoại gồm 10 số, bắt đầu bằng 0';
-        if (!form.province) e.province = 'Vui lòng chọn tỉnh/thành';
-        if (!form.ward.trim()) e.ward = 'Vui lòng nhập phường/xã';
-        if (!form.addressDetail.trim()) e.addressDetail = 'Vui lòng nhập số nhà, tên đường';
+        if (!form.fullName.trim()) e.fullName = t('address.nameRequired');
+        if (!PHONE_RE.test(form.phoneNumber.trim())) e.phoneNumber = t('address.phoneInvalid');
+        if (!form.province) e.province = t('address.provinceRequired');
+        if (!form.ward.trim()) e.ward = t('address.wardRequired');
+        if (!form.addressDetail.trim()) e.addressDetail = t('address.detailRequired');
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -60,11 +62,11 @@ export function AddressFormModal({
         setSaving(true);
         try {
             const res = editing ? await addressService.updateAddress(editing.id, form) : await addressService.addAddress(form);
-            toast(editing ? 'Đã cập nhật địa chỉ' : 'Đã thêm địa chỉ');
+            toast(editing ? t('address.updated') : t('address.added'));
             onSaved(res.data);
             onClose();
         } catch (e) {
-            toast(errorMessage(e, 'Không lưu được địa chỉ'), 'error');
+            toast(errorMessage(e, t('address.saveFailed')), 'error');
         } finally {
             setSaving(false);
         }
@@ -79,17 +81,17 @@ export function AddressFormModal({
     );
 
     return (
-        <Modal open={open} onClose={onClose} title={editing ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}>
+        <Modal open={open} onClose={onClose} title={editing ? t('address.editTitle') : t('address.newTitle')}>
             <form onSubmit={submit} className="space-y-4" noValidate>
                 <div className="grid gap-4 sm:grid-cols-2">
                     {field(
                         'fullName',
-                        'Họ và tên',
+                        t('address.fullName'),
                         <input className="input" value={form.fullName} onChange={(e) => set('fullName', e.target.value)} aria-invalid={!!errors.fullName} autoComplete="name" />
                     )}
                     {field(
                         'phoneNumber',
-                        'Số điện thoại',
+                        t('address.phone'),
                         <input
                             className="input"
                             inputMode="tel"
@@ -103,9 +105,9 @@ export function AddressFormModal({
                 <div className="grid gap-4 sm:grid-cols-2">
                     {field(
                         'province',
-                        'Tỉnh / Thành phố',
+                        t('address.province'),
                         <select className="input" value={form.province} onChange={(e) => set('province', e.target.value)} aria-invalid={!!errors.province}>
-                            <option value="">— Chọn tỉnh/thành —</option>
+                            <option value="">{t('address.pickProvince')}</option>
                             {PROVINCES.map((p) => (
                                 <option key={p}>{p}</option>
                             ))}
@@ -113,33 +115,33 @@ export function AddressFormModal({
                     )}
                     {field(
                         'ward',
-                        'Phường / Xã',
-                        <input className="input" placeholder="VD: Phường Bến Thành" value={form.ward} onChange={(e) => set('ward', e.target.value)} aria-invalid={!!errors.ward} />
+                        t('address.ward'),
+                        <input className="input" placeholder={t('address.wardPlaceholder')} value={form.ward} onChange={(e) => set('ward', e.target.value)} aria-invalid={!!errors.ward} />
                     )}
                 </div>
                 {field(
                     'addressDetail',
-                    'Số nhà, tên đường',
+                    t('address.detail'),
                     <input
                         className="input"
-                        placeholder="VD: 12 Lê Lợi"
+                        placeholder={t('address.detailPlaceholder')}
                         value={form.addressDetail}
                         onChange={(e) => set('addressDetail', e.target.value)}
                         aria-invalid={!!errors.addressDetail}
                         autoComplete="street-address"
                     />
                 )}
-                <p className="text-xs text-muted">Áp dụng địa giới hành chính 2 cấp mới (Tỉnh/Thành → Phường/Xã) từ 01/07/2025.</p>
-                <label className="flex items-center gap-2 text-sm">
+                <p className="text-xs text-muted">{t('address.adminNote')}</p>
+                <label className="flex items-center gap-2 py-1 text-sm">
                     <input type="checkbox" className="h-4 w-4 accent-brand-500" checked={!!form.isDefault} onChange={(e) => set('isDefault', e.target.checked)} />
-                    Đặt làm địa chỉ mặc định
+                    {t('address.makeDefault')}
                 </label>
                 <div className="flex justify-end gap-3 pt-2">
                     <Button type="button" variant="outline" onClick={onClose}>
-                        Hủy
+                        {t('address.cancel')}
                     </Button>
                     <Button type="submit" loading={saving}>
-                        Lưu địa chỉ
+                        {t('address.save')}
                     </Button>
                 </div>
             </form>

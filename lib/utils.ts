@@ -15,15 +15,27 @@ export function cn(...inputs: (string | undefined | null | false | { [key: strin
         .join(' ');
 }
 
-/** Định dạng tiền tệ VND: 1.250.000₫ */
+/** Locale định dạng số/ngày — I18nProvider cập nhật khi khách đổi ngôn ngữ */
+let fmtLocale = 'vi-VN';
+export function setFormatLocale(l: 'vi' | 'en') {
+    fmtLocale = l === 'en' ? 'en-US' : 'vi-VN';
+}
+export const getFormatLocale = () => fmtLocale;
+
+/** Định dạng tiền tệ VND: 1.250.000₫ (tiếng Anh: 1,250,000₫) */
 export function formatVND(amount: number | null | undefined) {
-    return (amount || 0).toLocaleString('vi-VN') + '₫';
+    return (amount || 0).toLocaleString(fmtLocale) + '₫';
+}
+
+/** Định dạng số nguyên theo ngôn ngữ: 1.234 / 1,234 */
+export function formatNumber(n: number | null | undefined) {
+    return (n || 0).toLocaleString(fmtLocale);
 }
 
 /** Rút gọn số lượng: 1200 → 1,2k */
 export function formatCompact(n: number | null | undefined) {
     const value = n || 0;
-    if (value >= 1000) return (value / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + 'k';
+    if (value >= 1000) return (value / 1000).toLocaleString(fmtLocale, { maximumFractionDigits: 1 }) + 'k';
     return value.toString();
 }
 
@@ -31,8 +43,13 @@ export function formatDate(iso: string | null | undefined, withTime = false) {
     if (!iso) return '';
     const d = new Date(iso);
     return withTime
-        ? d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
-        : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        ? d.toLocaleString(fmtLocale, { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+        : d.toLocaleDateString(fmtLocale, { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+export function formatTime(iso: string | null | undefined) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleTimeString(fmtLocale, { hour: '2-digit', minute: '2-digit' });
 }
 
 const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8082/api').replace(/\/api\/?$/, '');

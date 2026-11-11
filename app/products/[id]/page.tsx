@@ -24,6 +24,7 @@ import { voucherHeadline } from '@/components/home/VoucherStrip';
 import { PROVINCES } from '@/lib/provinces';
 import { pushRecentlyViewed } from '@/lib/recentlyViewed';
 import { cn, effectivePrice, errorMessage, formatCompact, formatVND, productImages, totalStock } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n/client';
 
 type Tab = 'desc' | 'reviews' | 'policy';
 
@@ -32,6 +33,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const router = useRouter();
     const dispatch = useAppDispatch();
     const toast = useToast();
+    const { t, cat, locale } = useI18n();
 
     const [product, setProduct] = useState<ProductResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -118,9 +120,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="container-page py-10">
                 <EmptyState
                     icon={<PackageX className="h-9 w-9" />}
-                    title="Không tìm thấy sản phẩm"
-                    description="Sản phẩm có thể đã ngừng bán hoặc đường dẫn không đúng."
-                    action={<LinkButton href="/products">Xem sản phẩm khác</LinkButton>}
+                    title={t('detail.notFound')}
+                    description={t('detail.notFoundBody')}
+                    action={<LinkButton href="/products">{t('detail.browseOther')}</LinkButton>}
                 />
             </div>
         );
@@ -129,7 +131,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const handleAdd = async (mode: 'cart' | 'buy') => {
         if (!selected) {
             setSizeError(true);
-            toast('Vui lòng chọn size', 'info');
+            toast(t('detail.pickSize'), 'info');
             document.getElementById('size-picker')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
@@ -149,24 +151,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 })
             ).unwrap();
             if (mode === 'buy') router.push('/cart');
-            else toast(`Đã thêm ${qty} × ${product.name} (size ${selected.size}) vào giỏ`);
+            else toast(t('detail.added', { qty, name: product.name, size: selected.size }));
         } catch (e) {
-            toast(errorMessage(e, 'Không thêm được vào giỏ hàng'), 'error');
+            toast(errorMessage(e, t('detail.addFailed')), 'error');
         } finally {
             setAdding(null);
         }
     };
 
-    const tabBtn = (t: Tab) =>
-        cn('relative px-1 pb-3 text-sm font-semibold transition', tab === t ? 'text-brand-700' : 'text-muted hover:text-ink');
+    const tabBtn = (key: Tab) =>
+        cn('relative shrink-0 whitespace-nowrap px-1 pb-3 text-sm font-semibold transition', tab === key ? 'text-brand-700' : 'text-muted hover:text-ink');
 
     return (
         <div className="pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6">
             <div className="container-page py-4">
                 <Breadcrumb
                     items={[
-                        { label: 'Trang chủ', href: '/' },
-                        ...(product.categoryName ? [{ label: product.categoryName, href: `/products?categoryName=${encodeURIComponent(product.categoryName)}` }] : []),
+                        { label: t('common.home'), href: '/' },
+                        ...(product.categoryName ? [{ label: cat(product.categoryName), href: `/products?categoryName=${encodeURIComponent(product.categoryName)}` }] : []),
                         { label: product.name },
                     ]}
                 />
@@ -182,8 +184,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                             <span className="text-xs font-bold uppercase tracking-wider text-brand-600">{product.brandName}</span>
                         )}
                         {product.model3dUrl && (
-                            <span className="flex items-center gap-1 rounded-md bg-ink px-1.5 py-0.5 text-[11px] font-bold text-white">
-                                <Box className="h-3 w-3" /> Có mô hình 3D
+                            <span className="flex items-center gap-1 rounded-md bg-night px-1.5 py-0.5 text-[11px] font-bold text-white">
+                                <Box className="h-3 w-3" /> {t('detail.has3d')}
                             </span>
                         )}
                     </div>
@@ -191,24 +193,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
                         <button onClick={() => { setTab('reviews'); document.getElementById('details')?.scrollIntoView({ behavior: 'smooth' }); }} className="flex items-center gap-1.5 hover:text-ink">
                             <Rating value={product.avgRating} />
-                            <span className="font-semibold text-ink">{(product.avgRating || 0).toFixed(1)}</span>({product.reviewCount} đánh giá)
+                            <span className="font-semibold text-ink">{(product.avgRating || 0).toFixed(1)}</span>{t('detail.reviews', { n: product.reviewCount })}
                         </button>
-                        <span>Đã bán {formatCompact(product.totalSold)}</span>
-                        <span>Mã: {product.id}</span>
+                        <span>{t('detail.sold', { n: formatCompact(product.totalSold) })}</span>
+                        <span>{t('detail.sku', { id: product.id })}</span>
                     </div>
 
-                    <div className="mt-5 rounded-2xl bg-gradient-to-r from-mint-100 to-white p-4">
+                    <div className="mt-5 rounded-2xl bg-gradient-to-r from-mint-100 to-surface p-4">
                         <Price originalPrice={product.originalPrice} salePrice={product.salePrice} size="lg" />
                     </div>
 
                     {bestVouchers.length > 0 && (
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                             <span className="flex items-center gap-1 text-sm text-muted">
-                                <Ticket className="h-4 w-4 text-brand-500" /> Mã giảm:
+                                <Ticket className="h-4 w-4 text-brand-500" /> {t('detail.voucher')}
                             </span>
                             {bestVouchers.map((v) => (
-                                <span key={v.id} className="rounded-md border border-dashed border-brand-400 bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700" title={v.description || ''}>
-                                    {v.code} · {voucherHeadline(v)}
+                                <span key={v.id} className="rounded-md border border-dashed border-brand-400 bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700" title={locale === 'vi' ? v.description || '' : ''}>
+                                    {v.code} · {voucherHeadline(v, t)}
                                 </span>
                             ))}
                         </div>
@@ -218,7 +220,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <div id="size-picker" className="mt-6">
                         <div className="mb-2 flex items-center justify-between">
                             <p className="text-sm font-semibold">
-                                Chọn size {selected && <span className="text-brand-700">· EU {selected.size}</span>}
+                                {t('detail.chooseSize')} {selected && <span className="text-brand-700">· EU {selected.size}</span>}
                             </p>
                             <SizeGuide />
                         </div>
@@ -239,51 +241,51 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                                             'relative h-12 rounded-xl border text-sm font-semibold transition',
                                             selected?.id === v.id
                                                 ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-brand-500/30'
-                                                : 'border-line bg-white hover:border-brand-400',
+                                                : 'border-line bg-surface hover:border-brand-400',
                                             out && 'cursor-not-allowed bg-mint-50 text-muted line-through opacity-60'
                                         )}
                                     >
                                         {v.size}
                                         {!out && v.stockQuantity <= 5 && selected?.id !== v.id && (
-                                            <span className="absolute -right-1 -top-1.5 h-2.5 w-2.5 rounded-full bg-coral-500 ring-2 ring-white" title="Sắp hết" />
+                                            <span className="absolute -right-1 -top-1.5 h-2.5 w-2.5 rounded-full bg-coral-500 ring-2 ring-surface" title={t('detail.lowStock')} />
                                         )}
                                     </button>
                                 );
                             })}
                         </div>
                         {selected && selected.stockQuantity <= 5 && (
-                            <p className="mt-2 text-sm font-medium text-coral-600">Chỉ còn {selected.stockQuantity} đôi size {selected.size}</p>
+                            <p className="mt-2 text-sm font-medium text-coral-600">{t('detail.onlyLeft', { n: selected.stockQuantity, size: selected.size })}</p>
                         )}
-                        {stock === 0 && <p className="mt-2 text-sm font-medium text-coral-600">Sản phẩm tạm hết hàng</p>}
+                        {stock === 0 && <p className="mt-2 text-sm font-medium text-coral-600">{t('detail.soldOut')}</p>}
                     </div>
 
                     <div className="mt-6 flex items-center gap-4">
-                        <p className="text-sm font-semibold">Số lượng</p>
+                        <p className="text-sm font-semibold">{t('detail.quantity')}</p>
                         <QuantityInput value={qty} onChange={setQty} max={selected?.stockQuantity || 10} disabled={stock === 0} />
                     </div>
 
                     <div className="mt-6 hidden gap-3 md:flex">
                         <Button size="lg" variant="soft" className="flex-1" onClick={() => handleAdd('cart')} loading={adding === 'cart'} disabled={stock === 0}>
-                            <ShoppingBag className="h-5 w-5" /> Thêm vào giỏ
+                            <ShoppingBag className="h-5 w-5" /> {t('detail.addToCart')}
                         </Button>
                         <Button size="lg" variant="coral" className="flex-1" onClick={() => handleAdd('buy')} loading={adding === 'buy'} disabled={stock === 0}>
-                            <Zap className="h-5 w-5" /> Mua ngay
+                            <Zap className="h-5 w-5" /> {t('detail.buyNow')}
                         </Button>
                         <WishlistButton productId={product.id} withLabel className="h-13" />
                     </div>
 
                     {/* Vận chuyển */}
-                    <div className="mt-6 space-y-3 rounded-2xl border border-line bg-white p-4 text-sm">
+                    <div className="mt-6 space-y-3 rounded-2xl border border-line bg-surface p-4 text-sm">
                         <div className="flex items-start gap-3">
                             <Truck className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
                             <div className="flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <span>Giao đến</span>
+                                    <span>{t('detail.deliverTo')}</span>
                                     <select
                                         value={province}
                                         onChange={(e) => setProvince(e.target.value)}
-                                        className="rounded-lg border border-line bg-white px-2 py-1 text-sm font-semibold outline-none focus:border-brand-400"
-                                        aria-label="Tỉnh/Thành nhận hàng"
+                                        className="rounded-lg border border-line bg-surface px-2 py-1.5 text-sm font-semibold text-ink outline-none focus:border-brand-400"
+                                        aria-label={t('detail.province')}
                                     >
                                         {PROVINCES.map((p) => (
                                             <option key={p}>{p}</option>
@@ -292,23 +294,23 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                                 </div>
                                 {quote && (
                                     <p className="mt-1 text-muted">
-                                        Phí ship:{' '}
+                                        {t('detail.shipFee')}{' '}
                                         <b className={quote.freeShipping ? 'text-brand-600' : 'text-ink'}>
-                                            {quote.freeShipping ? 'Miễn phí' : formatVND(quote.fee)}
+                                            {quote.freeShipping ? t('detail.free') : formatVND(quote.fee)}
                                         </b>{' '}
-                                        · Dự kiến {quote.estimatedDays}
+                                        {t('detail.eta', { d: quote.estimatedDays })}
                                         {!quote.freeShipping && quote.freeShippingThreshold > 0 && (
-                                            <> · Freeship cho đơn từ {formatVND(quote.freeShippingThreshold)}</>
+                                            <>{t('detail.freeFrom', { v: formatVND(quote.freeShippingThreshold) })}</>
                                         )}
                                     </p>
                                 )}
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <RotateCcw className="h-5 w-5 shrink-0 text-brand-500" /> Đổi size / trả hàng trong 7 ngày
+                            <RotateCcw className="h-5 w-5 shrink-0 text-brand-500" /> {t('detail.returns')}
                         </div>
                         <div className="flex items-center gap-3">
-                            <ShieldCheck className="h-5 w-5 shrink-0 text-brand-500" /> Chính hãng, bảo hành lỗi nhà sản xuất
+                            <ShieldCheck className="h-5 w-5 shrink-0 text-brand-500" /> {t('detail.warranty')}
                         </div>
                     </div>
                 </div>
@@ -317,17 +319,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {/* Tabs chi tiết */}
             <section id="details" className="container-page mt-14 scroll-mt-36">
                 <div className="card p-5 md:p-8">
-                    <div className="flex gap-6 border-b border-line" role="tablist">
+                    <div className="scrollbar-none -mx-5 flex gap-6 overflow-x-auto border-b border-line px-5 md:mx-0 md:px-0" role="tablist">
                         {(
                             [
-                                ['desc', 'Mô tả sản phẩm'],
-                                ['reviews', `Đánh giá (${product.reviewCount})`],
-                                ['policy', 'Vận chuyển & đổi trả'],
+                                ['desc', t('detail.tabDesc')],
+                                ['reviews', t('detail.tabReviews', { n: product.reviewCount })],
+                                ['policy', t('detail.tabPolicy')],
                             ] as [Tab, string][]
-                        ).map(([t, label]) => (
-                            <button key={t} role="tab" aria-selected={tab === t} className={tabBtn(t)} onClick={() => setTab(t)}>
+                        ).map(([key, label]) => (
+                            <button key={key} role="tab" aria-selected={tab === key} className={tabBtn(key)} onClick={() => setTab(key)}>
                                 {label}
-                                {tab === t && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-brand-500" />}
+                                {tab === key && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-brand-500" />}
                             </button>
                         ))}
                     </div>
@@ -337,20 +339,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                                 {product.description ? (
                                     <p className="whitespace-pre-line text-[15px] leading-7 text-ink/90">{product.description}</p>
                                 ) : (
-                                    <p className="text-muted">Sản phẩm chưa có mô tả.</p>
+                                    <p className="text-muted">{t('detail.noDesc')}</p>
                                 )}
                                 <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl bg-mint-50 p-5 text-sm sm:grid-cols-3">
                                     <div>
-                                        <dt className="text-muted">Thương hiệu</dt>
+                                        <dt className="text-muted">{t('detail.brand')}</dt>
                                         <dd className="font-semibold">{product.brandName || '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-muted">Danh mục</dt>
-                                        <dd className="font-semibold">{product.categoryName || '—'}</dd>
+                                        <dt className="text-muted">{t('detail.category')}</dt>
+                                        <dd className="font-semibold">{product.categoryName ? cat(product.categoryName) : '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-muted">Size có sẵn</dt>
-                                        <dd className="font-semibold">{variants.filter((v) => v.stockQuantity > 0).map((v) => v.size).join(', ') || 'Hết hàng'}</dd>
+                                        <dt className="text-muted">{t('detail.availableSizes')}</dt>
+                                        <dd className="font-semibold">{variants.filter((v) => v.stockQuantity > 0).map((v) => v.size).join(', ') || t('detail.outOfStock')}</dd>
                                     </div>
                                 </dl>
                             </div>
@@ -359,14 +361,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         {tab === 'policy' && (
                             <div className="grid max-w-3xl gap-4 text-sm leading-6 text-ink/90">
                                 <p>
-                                    <b>Giao hàng:</b> Đơn được xác nhận và đóng gói trong 24 giờ. Phí ship tính theo tỉnh/thành và hiển thị trước khi đặt hàng; miễn phí
-                                    cho đơn từ 1.000.000₫.
+                                    <b>{t('detail.policyShipTitle')}</b> {t('detail.policyShip')}
                                 </p>
                                 <p>
-                                    <b>Đổi trả:</b> Yêu cầu đổi size hoặc trả hàng trong 7 ngày kể từ khi nhận hàng, sản phẩm còn nguyên tem mác và chưa qua sử dụng.
+                                    <b>{t('detail.policyReturnTitle')}</b> {t('detail.policyReturn')}
                                 </p>
                                 <p>
-                                    <b>Bảo hành:</b> Gửi yêu cầu bảo hành lỗi keo, chỉ trong 30 ngày kể từ khi nhận hàng, ngay trong mục Đơn hàng của tôi.
+                                    <b>{t('detail.policyWarrantyTitle')}</b> {t('detail.policyWarranty')}
                                 </p>
                             </div>
                         )}
@@ -377,7 +378,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {related.length > 0 && (
                 <section className="container-page mt-14">
                     <SectionHeading
-                        title="Sản phẩm tương tự"
+                        title={t('detail.related')}
                         href={product.categoryName ? `/products?categoryName=${encodeURIComponent(product.categoryName)}` : '/products'}
                     />
                     <ProductCarousel products={related} />
@@ -387,13 +388,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <RecentlyViewed excludeId={product.id} className="container-page mt-14" />
 
             {/* Thanh mua hàng cố định trên điện thoại */}
-            <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+            <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-surface/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
                 <WishlistButton productId={product.id} className="h-12 w-12 shrink-0 rounded-xl border border-line" />
                 <Button variant="soft" className="h-12 flex-1" onClick={() => handleAdd('cart')} loading={adding === 'cart'} disabled={stock === 0}>
-                    Thêm vào giỏ
+                    {t('detail.addToCart')}
                 </Button>
                 <Button variant="coral" className="h-12 flex-1" onClick={() => handleAdd('buy')} loading={adding === 'buy'} disabled={stock === 0}>
-                    Mua ngay
+                    {t('detail.buyNow')}
                 </Button>
             </div>
         </div>

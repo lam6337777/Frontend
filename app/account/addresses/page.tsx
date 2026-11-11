@@ -10,9 +10,11 @@ import { EmptyState } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { errorMessage } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 export default function AddressesPage() {
     const toast = useToast();
+    const t = useT();
     const [list, setList] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState<{ open: boolean; editing: Address | null }>({ open: false, editing: null });
@@ -33,7 +35,7 @@ export default function AddressesPage() {
     const makeDefault = async (a: Address) => {
         try {
             await addressService.setDefaultAddress(a.id);
-            toast('Đã đặt làm địa chỉ mặc định');
+            toast(t('addresses.defaultSet'));
             load();
         } catch (e) {
             toast(errorMessage(e), 'error');
@@ -45,7 +47,7 @@ export default function AddressesPage() {
         setBusy(true);
         try {
             await addressService.deleteAddress(deleting.id);
-            toast('Đã xóa địa chỉ');
+            toast(t('addresses.deleted'));
             setDeleting(null);
             load();
         } catch (e) {
@@ -58,10 +60,10 @@ export default function AddressesPage() {
     return (
         <div>
             <div className="mb-4 flex items-center justify-between">
-                <h1 className="text-xl font-bold">Sổ địa chỉ</h1>
+                <h1 className="text-xl font-bold">{t('addresses.title')}</h1>
                 {list.length > 0 && (
                     <Button size="sm" onClick={() => setModal({ open: true, editing: null })}>
-                        <Plus className="h-4 w-4" /> Thêm địa chỉ
+                        <Plus className="h-4 w-4" /> {t('addresses.add')}
                     </Button>
                 )}
             </div>
@@ -72,9 +74,9 @@ export default function AddressesPage() {
                 <div className="card">
                     <EmptyState
                         icon={<MapPin className="h-9 w-9" />}
-                        title="Chưa có địa chỉ nào"
-                        description="Lưu địa chỉ để thanh toán nhanh hơn ở lần sau."
-                        action={<Button onClick={() => setModal({ open: true, editing: null })}>Thêm địa chỉ</Button>}
+                        title={t('addresses.empty')}
+                        description={t('addresses.emptyBody')}
+                        action={<Button onClick={() => setModal({ open: true, editing: null })}>{t('addresses.add')}</Button>}
                     />
                 </div>
             ) : (
@@ -86,19 +88,19 @@ export default function AddressesPage() {
                                     <p className="font-semibold">{a.fullName}</p>
                                     <p className="text-sm text-muted">{a.phoneNumber}</p>
                                 </div>
-                                {a.isDefault && <span className="rounded-md bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">Mặc định</span>}
+                                {a.isDefault && <span className="rounded-md bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">{t('addresses.default')}</span>}
                             </div>
                             <p className="mt-3 text-sm">{formatAddress(a)}</p>
                             <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3">
                                 <Button size="sm" variant="ghost" onClick={() => setModal({ open: true, editing: a })}>
-                                    <Pencil className="h-3.5 w-3.5" /> Sửa
+                                    <Pencil className="h-3.5 w-3.5" /> {t('addresses.edit')}
                                 </Button>
                                 <Button size="sm" variant="ghost" className="text-coral-600" onClick={() => setDeleting(a)}>
-                                    <Trash2 className="h-3.5 w-3.5" /> Xóa
+                                    <Trash2 className="h-3.5 w-3.5" /> {t('addresses.delete')}
                                 </Button>
                                 {!a.isDefault && (
                                     <Button size="sm" variant="soft" className="ml-auto" onClick={() => makeDefault(a)}>
-                                        Đặt mặc định
+                                        {t('addresses.makeDefault')}
                                     </Button>
                                 )}
                             </div>
@@ -111,15 +113,15 @@ export default function AddressesPage() {
             <Modal
                 open={!!deleting}
                 onClose={() => setDeleting(null)}
-                title="Xóa địa chỉ?"
+                title={t('addresses.deleteTitle')}
                 size="sm"
                 footer={
                     <>
                         <Button variant="outline" onClick={() => setDeleting(null)}>
-                            Không
+                            {t('addresses.no')}
                         </Button>
                         <Button variant="coral" loading={busy} onClick={remove}>
-                            Xóa
+                            {t('addresses.delete')}
                         </Button>
                     </>
                 }

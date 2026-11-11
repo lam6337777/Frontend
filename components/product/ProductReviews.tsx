@@ -7,8 +7,10 @@ import { ReviewResponse } from '@/types/review';
 import { Rating } from '@/components/ui/Rating';
 import { EmptyState, Pagination } from '@/components/ui/misc';
 import { formatDate, resolveAssetUrl } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 export function ProductReviews({ productId, avgRating, reviewCount }: { productId: string; avgRating: number; reviewCount: number }) {
+    const t = useT();
     const [reviews, setReviews] = useState<ReviewResponse[]>([]);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -30,8 +32,8 @@ export function ProductReviews({ productId, avgRating, reviewCount }: { productI
         return (
             <EmptyState
                 icon={<MessageSquareText className="h-9 w-9" />}
-                title="Chưa có đánh giá"
-                description="Khách đã mua và nhận hàng có thể đánh giá trong mục Đơn hàng của tôi."
+                title={t('reviews.empty')}
+                description={t('reviews.emptyBody')}
             />
         );
     }
@@ -41,7 +43,7 @@ export function ProductReviews({ productId, avgRating, reviewCount }: { productI
             <div className="flex flex-col items-center rounded-2xl bg-mint-50 p-6 text-center md:self-start">
                 <p className="text-5xl font-extrabold text-ink">{(avgRating || 0).toFixed(1)}</p>
                 <Rating value={avgRating} size={20} className="mt-2" />
-                <p className="mt-2 text-sm text-muted">{reviewCount} đánh giá</p>
+                <p className="mt-2 text-sm text-muted">{t('reviews.count', { n: reviewCount })}</p>
             </div>
             <div>
                 <ul className="divide-y divide-line">
@@ -65,7 +67,7 @@ export function ProductReviews({ productId, avgRating, reviewCount }: { productI
                                   <div className="min-w-0 flex-1">
                                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                                           <p className="text-sm font-semibold">{r.fullName}</p>
-                                          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">Đã mua hàng</span>
+                                          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">{t('reviews.verified')}</span>
                                       </div>
                                       <div className="mt-1 flex items-center gap-2 text-xs text-muted">
                                           <Rating value={r.rating} size={12} /> {formatDate(r.createdAt)}

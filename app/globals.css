@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
+/* Chế độ tối theo class .dark trên <html> (ThemeProvider đặt class này) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * PF. Shoes — hệ thống màu "tươi mát"
  * - brand: xanh ngọc (teal/mint) cho hành động chính, liên kết, trạng thái chọn
  * - coral: san hô cho giá giảm, badge khuyến mãi, đếm giỏ hàng
  * - mint: nền trang ánh bạc hà nhẹ
  * Luôn dùng các token này (bg-brand-500, text-coral-500, ...) thay vì mã hex.
+ *
+ * Chế độ tối: các biến màu được định nghĩa lại trong `.dark` bên dưới, nên phần lớn
+ * class (text-ink, bg-mint-50, border-line, bg-brand-50...) tự đổi màu.
+ * - bg-surface : nền thẻ/khung (trắng ↔ xám xanh đậm) — dùng thay bg-white
+ * - bg-night   : nền tối CỐ ĐỊNH (nút đen, lớp phủ) — không đổi theo chế độ
+ * - bg-white/10..25 vẫn là lớp trắng mờ trên nền gradient, giữ nguyên
  */
 @theme {
   --font-sans: var(--font-be-vietnam), ui-sans-serif, system-ui, sans-serif;
@@ -30,6 +39,9 @@
 
   --color-mint-50: #f4fbf9;
   --color-mint-100: #e6f6f2;
+
+  --color-surface: #ffffff;
+  --color-night: #10231f;
 
   --color-ink: #10231f;
   --color-muted: #5f7471;
@@ -73,6 +85,41 @@
   }
 }
 
+/* Bảng màu tối: định nghĩa lại biến, utilities của Tailwind tham chiếu var() nên tự đổi theo */
+.dark {
+  color-scheme: dark;
+
+  --color-surface: #13201e;
+
+  --color-mint-50: #0a1412;
+  --color-mint-100: #172724;
+
+  --color-ink: #e3f0ed;
+  --color-muted: #93a9a5;
+  --color-line: #253835;
+
+  --color-brand-50: #0f2c27;
+  --color-brand-100: #143c35;
+  --color-brand-200: #1c5349;
+  --color-brand-700: #5fe2ca;
+  --color-brand-800: #8fefdc;
+  --color-brand-900: #b9f6ea;
+
+  --color-coral-50: #321917;
+  --color-coral-100: #43211d;
+  --color-coral-200: #5c2c26;
+  --color-coral-600: #ff8f80;
+
+  --color-slate-100: #1c2a28;
+  --color-slate-200: #283936;
+  --color-slate-400: #6c827d;
+  --color-slate-500: #8aa09b;
+  --color-slate-600: #b2c4c0;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 16px rgb(0 0 0 / 0.3);
+  --shadow-lift: 0 12px 32px -8px rgb(0 0 0 / 0.55), 0 4px 12px rgb(0 0 0 / 0.35);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -113,13 +160,13 @@
   }
 
   .card {
-    background: #fff;
+    background: var(--color-surface);
     border-radius: 16px;
     box-shadow: var(--shadow-card);
   }
 
   .skeleton {
-    background: linear-gradient(90deg, var(--color-mint-100) 0%, #f7fcfb 50%, var(--color-mint-100) 100%);
+    background: linear-gradient(90deg, var(--color-mint-100) 0%, var(--color-mint-50) 50%, var(--color-mint-100) 100%);
     background-size: 800px 100%;
     animation: var(--animate-shimmer);
     border-radius: 12px;
@@ -128,7 +175,8 @@
   .input {
     width: 100%;
     border: 1px solid var(--color-line);
-    background: #fff;
+    background: var(--color-surface);
+    color: var(--color-ink);
     border-radius: 12px;
     padding: 10px 14px;
     font-size: 14px;

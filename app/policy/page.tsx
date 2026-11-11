@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import { Lock, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
+import { getLocale } from '@/lib/i18n/server';
 
-export const metadata: Metadata = { title: 'Chính sách cửa hàng' };
+export async function generateMetadata(): Promise<Metadata> {
+    return { title: (await getLocale()) === 'en' ? 'Store policies' : 'Chính sách cửa hàng' };
+}
 
 // Nội dung khớp với quy tắc hệ thống đang áp dụng (phí ship theo tỉnh, đổi trả 7 ngày, yêu cầu bảo hành trong 30 ngày)
-const SECTIONS = [
+const SECTIONS_VI = [
     {
         id: 'shipping',
         icon: Truck,
@@ -47,14 +50,51 @@ const SECTIONS = [
     },
 ];
 
-export default function PolicyPage() {
+const SECTIONS_EN: { title: string; items: string[][] }[] = [
+    {
+        title: 'Shipping policy',
+        items: [
+            ['Processing time', 'Orders are confirmed and packed within 24 hours.'],
+            ['Delivery time', 'Estimated delivery is shown per province when you choose an address (usually 1–5 business days).'],
+            ['Shipping fee', 'Calculated by province and shown before you order. Free shipping on orders from 1,000,000₫.'],
+            ['Order tracking', 'See status and update history under Account → Orders.'],
+        ],
+    },
+    {
+        title: 'Returns & refunds',
+        items: [
+            ['Time limit', 'Request a size exchange or return within 7 days of successful delivery.'],
+            ['Conditions', 'Tags intact, shoebox undamaged and the product unused.'],
+            ['How to request', 'Open a delivered order → “Request exchange / return / warranty”, pick the items and describe the reason.'],
+            ['Defective items', 'All return shipping costs are covered if the product has a manufacturing defect.'],
+        ],
+    },
+    {
+        title: 'Warranty',
+        items: [
+            ['Coverage', 'Glue and stitching defects caused by the manufacturer.'],
+            ['Request window', 'Within 30 days of delivery, submitted directly from the Orders page.'],
+        ],
+    },
+    {
+        title: 'Privacy',
+        items: [
+            ['Collection', 'We only collect information needed for delivery and customer care.'],
+            ['Sharing', 'We never share personal information with third parties for commercial purposes.'],
+        ],
+    },
+];
+
+export default async function PolicyPage() {
+    const en = (await getLocale()) === 'en';
+    const SECTIONS = en ? SECTIONS_VI.map((s, i) => ({ ...s, ...SECTIONS_EN[i] })) : SECTIONS_VI;
     return (
         <div className="container-page py-8">
             <div className="mx-auto max-w-3xl">
-                <h1 className="text-3xl font-extrabold tracking-tight">Chính sách cửa hàng</h1>
-                <nav className="mt-5 flex flex-wrap gap-2">
+                <h1 className="text-3xl font-extrabold tracking-tight">{en ? 'Store policies' : 'Chính sách cửa hàng'}</h1>
+                <nav className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
                     {SECTIONS.map((s) => (
-                        <a key={s.id} href={`#${s.id}`} className="rounded-full bg-white px-4 py-2 text-sm font-semibold shadow-card hover:text-brand-600">
+                        <a key={s.id} href={`#${s.id}`} className="shrink-0 rounded-full bg-surface px-4 py-2 text-sm font-semibold shadow-card hover:text-brand-600">
                             {s.title}
                         </a>
                     ))}
@@ -80,8 +120,8 @@ export default function PolicyPage() {
                     ))}
                 </div>
                 <div className="mt-8 rounded-3xl bg-gradient-to-r from-brand-500 to-brand-400 p-6 text-white">
-                    <h2 className="text-lg font-bold">Bạn còn thắc mắc?</h2>
-                    <p className="mt-1 text-sm text-white/90">Mở khung chat ở góc màn hình để hỏi trợ lý AI hoặc nhắn trực tiếp cho nhân viên hỗ trợ.</p>
+                    <h2 className="text-lg font-bold">{en ? 'Still have questions?' : 'Bạn còn thắc mắc?'}</h2>
+                    <p className="mt-1 text-sm text-white/90">{en ? 'Open the chat in the corner of the screen to ask our AI assistant or message a support agent directly.' : 'Mở khung chat ở góc màn hình để hỏi trợ lý AI hoặc nhắn trực tiếp cho nhân viên hỗ trợ.'}</p>
                 </div>
             </div>
         </div>

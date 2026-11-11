@@ -7,21 +7,24 @@ import { ChevronRight, Package } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { OrderResponse, OrderStatus } from '@/types/order';
 import { ORDER_STATUS } from '@/lib/orderStatus';
+import type { TKey } from '@/lib/i18n/core';
 import { Badge, EmptyState, Pagination } from '@/components/ui/misc';
 import { LinkButton } from '@/components/ui/Button';
 import { cn, formatDate, formatVND, PLACEHOLDER_IMAGE, resolveAssetUrl } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
-const TABS: { value?: OrderStatus; label: string }[] = [
-    { label: 'Tất cả' },
-    { value: OrderStatus.PENDING, label: 'Chờ xác nhận' },
-    { value: OrderStatus.CONFIRMED, label: 'Đã xác nhận' },
-    { value: OrderStatus.SHIPPING, label: 'Đang giao' },
-    { value: OrderStatus.DELIVERED, label: 'Đã giao' },
-    { value: OrderStatus.CANCELLED, label: 'Đã hủy' },
+const TABS: { value?: OrderStatus; label: TKey }[] = [
+    { label: 'orders.all' },
+    { value: OrderStatus.PENDING, label: 'status.PENDING' },
+    { value: OrderStatus.CONFIRMED, label: 'status.CONFIRMED' },
+    { value: OrderStatus.SHIPPING, label: 'status.SHIPPING' },
+    { value: OrderStatus.DELIVERED, label: 'status.DELIVERED' },
+    { value: OrderStatus.CANCELLED, label: 'status.CANCELLED' },
 ];
 
 function OrderCard({ order }: { order: OrderResponse }) {
-    const st = ORDER_STATUS[order.status] || { label: order.status, tone: 'slate' as const };
+    const t = useT();
+    const st = ORDER_STATUS[order.status];
     const first = order.items.slice(0, 3);
     const more = order.items.length - first.length;
     return (
@@ -31,7 +34,7 @@ function OrderCard({ order }: { order: OrderResponse }) {
                     <span className="font-bold">#{order.orderCode}</span>
                     <span className="ml-2 text-muted">{formatDate(order.createdAt, true)}</span>
                 </div>
-                <Badge tone={st.tone}>{st.label}</Badge>
+                <Badge tone={st?.tone ?? 'slate'}>{st ? t(st.label) : order.status}</Badge>
             </div>
             <div className="flex items-center gap-3 py-4">
                 <div className="flex -space-x-3">
@@ -41,21 +44,21 @@ function OrderCard({ order }: { order: OrderResponse }) {
                             key={it.id}
                             src={resolveAssetUrl(it.imageUrl) || PLACEHOLDER_IMAGE}
                             alt=""
-                            className="h-16 w-16 rounded-xl border-2 border-white bg-mint-100 object-cover"
+                            className="h-16 w-16 rounded-xl border-2 border-surface bg-mint-100 object-cover"
                         />
                     ))}
                     {more > 0 && (
-                        <span className="grid h-16 w-16 place-items-center rounded-xl border-2 border-white bg-mint-100 text-sm font-bold text-muted">+{more}</span>
+                        <span className="grid h-16 w-16 place-items-center rounded-xl border-2 border-surface bg-mint-100 text-sm font-bold text-muted">+{more}</span>
                     )}
                 </div>
                 <div className="min-w-0 flex-1 text-sm">
                     <p className="line-clamp-1 font-medium">{order.items[0]?.productName}</p>
-                    <p className="text-muted">{order.items.reduce((n, i) => n + i.quantity, 0)} sản phẩm</p>
+                    <p className="text-muted">{t('orders.items', { n: order.items.reduce((n, i) => n + i.quantity, 0) })}</p>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted" />
             </div>
             <div className="flex items-center justify-end gap-2 border-t border-line pt-3 text-sm">
-                <span className="text-muted">Thành tiền:</span>
+                <span className="text-muted">{t('orders.total')}</span>
                 <span className="text-lg font-extrabold text-coral-500">{formatVND(order.totalAmount)}</span>
             </div>
         </Link>
@@ -63,6 +66,7 @@ function OrderCard({ order }: { order: OrderResponse }) {
 }
 
 function OrdersContent() {
+    const t = useT();
     const sp = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -94,18 +98,18 @@ function OrdersContent() {
 
     return (
         <div>
-            <h1 className="mb-4 text-xl font-bold">Đơn hàng của tôi</h1>
+            <h1 className="mb-4 text-xl font-bold">{t('orders.title')}</h1>
             <div className="card scrollbar-none mb-4 flex gap-1 overflow-x-auto p-1.5">
-                {TABS.map((t) => (
+                {TABS.map((tab) => (
                     <button
-                        key={t.label}
-                        onClick={() => go(t.value)}
+                        key={tab.label}
+                        onClick={() => go(tab.value)}
                         className={cn(
                             'shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition',
-                            status === t.value ? 'bg-brand-500 text-white' : 'text-muted hover:bg-mint-50 hover:text-ink'
+                            status === tab.value ? 'bg-brand-500 text-white' : 'text-muted hover:bg-mint-50 hover:text-ink'
                         )}
                     >
-                        {t.label}
+                        {t(tab.label)}
                     </button>
                 ))}
             </div>
@@ -119,9 +123,9 @@ function OrdersContent() {
                 <div className="card">
                     <EmptyState
                         icon={<Package className="h-9 w-9" />}
-                        title="Chưa có đơn hàng nào"
-                        description={status ? 'Không có đơn ở trạng thái này.' : 'Hãy chọn cho mình một đôi giày ưng ý nhé.'}
-                        action={<LinkButton href="/products">Mua sắm ngay</LinkButton>}
+                        title={t('orders.empty')}
+                        description={status ? t('orders.emptyStatus') : t('orders.emptyAll')}
+                        action={<LinkButton href="/products">{t('orders.shopNow')}</LinkButton>}
                     />
                 </div>
             ) : (

@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle2, MapPin, PackageX, Star, Ticket, Wallet } from 
 import { orderService } from '@/services/orderService';
 import { OrderItemResponse, OrderResponse, OrderStatus } from '@/types/order';
 import { ORDER_STATUS } from '@/lib/orderStatus';
+import type { TKey } from '@/lib/i18n/core';
 import { OrderTimeline } from '@/components/account/OrderTimeline';
 import { ReviewModal } from '@/components/account/ReviewModal';
 import { canRequestReturn, ReturnRequestModal } from '@/components/account/ReturnRequestModal';
@@ -15,20 +16,22 @@ import { Button, LinkButton } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { errorMessage, formatDate, formatVND, PLACEHOLDER_IMAGE, resolveAssetUrl } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
-const ITEM_STATUS_LABEL: Record<string, string> = {
-    RETURN_REQUESTED: 'Đang yêu cầu trả',
-    RETURNED: 'Đã trả',
-    EXCHANGE_REQUESTED: 'Đang yêu cầu đổi',
-    EXCHANGED: 'Đã đổi',
-    WARRANTY_REQUESTED: 'Đang yêu cầu bảo hành',
-    WARRANTY_REPAIRING: 'Đang bảo hành',
-    WARRANTY_COMPLETED: 'Đã bảo hành',
+const ITEM_STATUS_LABEL: Record<string, TKey> = {
+    RETURN_REQUESTED: 'itemStatus.RETURN_REQUESTED',
+    RETURNED: 'itemStatus.RETURNED',
+    EXCHANGE_REQUESTED: 'itemStatus.EXCHANGE_REQUESTED',
+    EXCHANGED: 'itemStatus.EXCHANGED',
+    WARRANTY_REQUESTED: 'itemStatus.WARRANTY_REQUESTED',
+    WARRANTY_REPAIRING: 'itemStatus.WARRANTY_REPAIRING',
+    WARRANTY_COMPLETED: 'itemStatus.WARRANTY_COMPLETED',
 };
 
 function OrderDetail({ code }: { code: string }) {
     const sp = useSearchParams();
     const toast = useToast();
+    const t = useT();
     const justPlaced = sp.get('placed') === '1';
 
     const [order, setOrder] = useState<OrderResponse | null>(null);
@@ -56,10 +59,10 @@ function OrderDetail({ code }: { code: string }) {
         try {
             const r = await orderService.cancelOrder(code);
             setOrder(r.data);
-            toast('Đã hủy đơn hàng');
+            toast(t('orders.cancelled'));
             setConfirmCancel(false);
         } catch (e) {
-            toast(errorMessage(e, 'Không hủy được đơn hàng'), 'error');
+            toast(errorMessage(e, t('orders.cancelFailed')), 'error');
         } finally {
             setCancelling(false);
         }
@@ -71,29 +74,29 @@ function OrderDetail({ code }: { code: string }) {
             <div className="card">
                 <EmptyState
                     icon={<PackageX className="h-9 w-9" />}
-                    title="Không tìm thấy đơn hàng"
-                    action={<LinkButton href="/account/orders">Về danh sách đơn</LinkButton>}
+                    title={t('orders.notFound')}
+                    action={<LinkButton href="/account/orders">{t('orders.backToList')}</LinkButton>}
                 />
             </div>
         );
     }
 
-    const st = ORDER_STATUS[order.status] || { label: order.status, tone: 'slate' as const };
+    const st = ORDER_STATUS[order.status];
     const canReview = order.status === OrderStatus.DELIVERED;
 
     return (
         <div className="space-y-5">
-            <Link href="/account/orders" className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-brand-600">
-                <ArrowLeft className="h-4 w-4" /> Đơn hàng của tôi
+            <Link href="/account/orders" className="inline-flex items-center gap-1 py-1 text-sm font-semibold text-muted hover:text-brand-600">
+                <ArrowLeft className="h-4 w-4" /> {t('orders.myOrders')}
             </Link>
 
             {justPlaced && (
                 <div className="flex animate-fade-up items-start gap-4 rounded-3xl bg-gradient-to-r from-brand-500 to-brand-400 p-6 text-white">
                     <CheckCircle2 className="h-10 w-10 shrink-0" />
                     <div>
-                        <h1 className="text-xl font-extrabold">Đặt hàng thành công!</h1>
+                        <h1 className="text-xl font-extrabold">{t('orders.placedTitle')}</h1>
                         <p className="mt-1 text-sm text-white/90">
-                            Cảm ơn bạn. Shop sẽ xác nhận đơn <b>#{order.orderCode}</b> trong thời gian sớm nhất. Bạn có thể theo dõi trạng thái ngay tại đây.
+                            {t('orders.placedBody', { code: order.orderCode })}
                         </p>
                     </div>
                 </div>
@@ -102,11 +105,11 @@ function OrderDetail({ code }: { code: string }) {
             <div className="card p-5 md:p-6">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-lg font-bold">Đơn hàng #{order.orderCode}</h2>
-                        <p className="text-sm text-muted">Đặt lúc {formatDate(order.createdAt, true)}</p>
+                        <h2 className="text-lg font-bold">{t('orders.orderNo', { code: order.orderCode })}</h2>
+                        <p className="text-sm text-muted">{t('orders.placedAt', { d: formatDate(order.createdAt, true) })}</p>
                     </div>
-                    <Badge tone={st.tone} className="text-sm">
-                        {st.label}
+                    <Badge tone={st?.tone ?? 'slate'} className="text-sm">
+                        {st ? t(st.label) : order.status}
                     </Badge>
                 </div>
                 <OrderTimeline order={order} />
@@ -115,28 +118,28 @@ function OrderDetail({ code }: { code: string }) {
             <div className="grid gap-5 md:grid-cols-2">
                 <div className="card p-5">
                     <h3 className="mb-3 flex items-center gap-2 font-bold">
-                        <MapPin className="h-4 w-4 text-brand-500" /> Địa chỉ nhận hàng
+                        <MapPin className="h-4 w-4 text-brand-500" /> {t('orders.address')}
                     </h3>
                     <p className="text-sm font-semibold">
                         {order.shippingName} · {order.shippingPhone}
                     </p>
                     <p className="mt-1 text-sm text-muted">{order.shippingAddress}</p>
-                    {order.note && <p className="mt-3 rounded-xl bg-mint-50 p-3 text-sm">Ghi chú: {order.note}</p>}
+                    {order.note && <p className="mt-3 rounded-xl bg-mint-50 p-3 text-sm">{t('orders.note', { v: order.note })}</p>}
                 </div>
                 <div className="card p-5">
                     <h3 className="mb-3 flex items-center gap-2 font-bold">
-                        <Wallet className="h-4 w-4 text-brand-500" /> Thanh toán
+                        <Wallet className="h-4 w-4 text-brand-500" /> {t('orders.payment')}
                     </h3>
-                    <p className="text-sm">{order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : order.paymentMethod}</p>
+                    <p className="text-sm">{order.paymentMethod === 'COD' ? t('orders.cod') : order.paymentMethod}</p>
                     <p className="mt-1 text-sm text-muted">
-                        Trạng thái:{' '}
-                        {{ PAID: 'Đã thanh toán', REFUNDED: 'Đã hoàn tiền', PARTIALLY_REFUNDED: 'Đã hoàn tiền một phần' }[order.paymentStatus] || 'Chưa thanh toán'}
+                        {t('orders.payStatus')}{' '}
+                        {({ PAID: t('orders.paid'), REFUNDED: t('orders.refunded'), PARTIALLY_REFUNDED: t('orders.partiallyRefunded') } as Record<string, string>)[order.paymentStatus] || t('orders.unpaid')}
                     </p>
                 </div>
             </div>
 
             <div className="card p-5 md:p-6">
-                <h3 className="mb-2 font-bold">Sản phẩm</h3>
+                <h3 className="mb-2 font-bold">{t('orders.products')}</h3>
                 <ul className="divide-y divide-line">
                     {order.items.map((it) => (
                         <li key={it.id} className="flex gap-4 py-4">
@@ -153,7 +156,7 @@ function OrderDetail({ code }: { code: string }) {
                                 </p>
                                 {it.status && it.status !== 'ACTIVE' && (
                                     <Badge tone="coral" className="mt-1">
-                                        {ITEM_STATUS_LABEL[it.status] || it.status}
+                                        {ITEM_STATUS_LABEL[it.status] ? t(ITEM_STATUS_LABEL[it.status]) : it.status}
                                     </Badge>
                                 )}
                             </div>
@@ -162,11 +165,11 @@ function OrderDetail({ code }: { code: string }) {
                                 {canReview &&
                                     (it.isReviewed ? (
                                         <span className="flex items-center gap-1 text-xs font-semibold text-brand-600">
-                                            <Star className="h-3.5 w-3.5 fill-current" /> Đã đánh giá
+                                            <Star className="h-3.5 w-3.5 fill-current" /> {t('orders.reviewed')}
                                         </span>
                                     ) : (
                                         <Button size="sm" variant="soft" onClick={() => setReviewItem(it)}>
-                                            <Star className="h-4 w-4" /> Đánh giá
+                                            <Star className="h-4 w-4" /> {t('orders.review')}
                                         </Button>
                                     ))}
                             </div>
@@ -176,23 +179,23 @@ function OrderDetail({ code }: { code: string }) {
 
                 <dl className="ml-auto mt-2 max-w-sm space-y-2 border-t border-line pt-4 text-sm">
                     <div className="flex justify-between">
-                        <dt className="text-muted">Tạm tính</dt>
+                        <dt className="text-muted">{t('orders.subtotal')}</dt>
                         <dd>{formatVND(order.subtotal)}</dd>
                     </div>
                     {order.discountAmount > 0 && (
                         <div className="flex justify-between text-brand-700">
                             <dt className="flex items-center gap-1">
-                                <Ticket className="h-4 w-4" /> Giảm giá {order.voucherCode && `(${order.voucherCode})`}
+                                <Ticket className="h-4 w-4" /> {t('orders.discount')} {order.voucherCode && `(${order.voucherCode})`}
                             </dt>
                             <dd>-{formatVND(order.discountAmount)}</dd>
                         </div>
                     )}
                     <div className="flex justify-between">
-                        <dt className="text-muted">Phí vận chuyển</dt>
-                        <dd>{order.shippingFee > 0 ? formatVND(order.shippingFee) : 'Miễn phí'}</dd>
+                        <dt className="text-muted">{t('orders.shipping')}</dt>
+                        <dd>{order.shippingFee > 0 ? formatVND(order.shippingFee) : t('orders.free')}</dd>
                     </div>
                     <div className="flex items-baseline justify-between border-t border-line pt-3">
-                        <dt className="font-bold">Thành tiền</dt>
+                        <dt className="font-bold">{t('orders.grandTotal')}</dt>
                         <dd className="text-xl font-extrabold text-coral-500">{formatVND(order.totalAmount)}</dd>
                     </div>
                 </dl>
@@ -201,16 +204,16 @@ function OrderDetail({ code }: { code: string }) {
             <div className="flex flex-wrap justify-end gap-3">
                 {order.status === OrderStatus.PENDING && (
                     <Button variant="outline" className="text-coral-600" onClick={() => setConfirmCancel(true)}>
-                        Hủy đơn hàng
+                        {t('orders.cancel')}
                     </Button>
                 )}
                 {canRequestReturn(order) && (
                     <Button variant="outline" onClick={() => setReturnOpen(true)}>
-                        Yêu cầu đổi / trả / bảo hành
+                        {t('orders.requestReturn')}
                     </Button>
                 )}
                 <LinkButton href="/products" variant="primary">
-                    Mua thêm
+                    {t('orders.buyMore')}
                 </LinkButton>
             </div>
 
@@ -219,20 +222,20 @@ function OrderDetail({ code }: { code: string }) {
             <Modal
                 open={confirmCancel}
                 onClose={() => setConfirmCancel(false)}
-                title="Hủy đơn hàng?"
+                title={t('orders.cancelTitle')}
                 size="sm"
                 footer={
                     <>
                         <Button variant="outline" onClick={() => setConfirmCancel(false)}>
-                            Không
+                            {t('orders.no')}
                         </Button>
                         <Button variant="coral" onClick={cancel} loading={cancelling}>
-                            Hủy đơn
+                            {t('orders.confirmCancel')}
                         </Button>
                     </>
                 }
             >
-                <p className="text-sm text-muted">Đơn #{order.orderCode} sẽ bị hủy và không thể khôi phục. Mã giảm giá (nếu có) sẽ được hoàn lượt dùng.</p>
+                <p className="text-sm text-muted">{t('orders.cancelBody', { code: order.orderCode })}</p>
             </Modal>
         </div>
     );

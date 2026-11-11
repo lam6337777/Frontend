@@ -18,6 +18,7 @@ import { Breadcrumb, EmptyState } from '@/components/ui/misc';
 import { VoucherPicker } from '@/components/cart/VoucherPicker';
 import { AddressFormModal } from '@/components/account/AddressForm';
 import { cn, errorMessage, formatVND, PLACEHOLDER_IMAGE } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 function Step({ n, title, children, action }: { n: number; title: string; children: React.ReactNode; action?: React.ReactNode }) {
     return (
@@ -39,6 +40,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const toast = useToast();
+    const t = useT();
     const { items, hydrated } = useAppSelector((s) => s.cart);
     const subtotal = useAppSelector(selectCartSubtotal);
 
@@ -90,7 +92,7 @@ export default function CheckoutPage() {
 
     const placeOrder = async () => {
         if (!address) {
-            toast('Vui lòng thêm địa chỉ giao hàng', 'info');
+            toast(t('checkout.addAddress'), 'info');
             setModal({ open: true, editing: null });
             return;
         }
@@ -112,7 +114,7 @@ export default function CheckoutPage() {
             dispatch(resetCart());
             router.replace(`/account/orders/${res.data.orderCode}?placed=1`);
         } catch (e) {
-            toast(errorMessage(e, 'Đặt hàng thất bại, vui lòng thử lại'), 'error');
+            toast(errorMessage(e, t('checkout.failed')), 'error');
             dispatch(fetchServerCart());
         } finally {
             setPlacing(false);
@@ -133,7 +135,7 @@ export default function CheckoutPage() {
     }
 
     if (placed) {
-        return <div className="container-page py-20 text-center text-muted">Đang mở đơn hàng của bạn…</div>;
+        return <div className="container-page py-20 text-center text-muted">{t('checkout.opening')}</div>;
     }
 
     if (items.length === 0 && !placing) {
@@ -142,8 +144,8 @@ export default function CheckoutPage() {
                 <div className="card">
                     <EmptyState
                         icon={<ShoppingBag className="h-9 w-9" />}
-                        title="Không có sản phẩm để thanh toán"
-                        action={<LinkButton href="/products">Tiếp tục mua sắm</LinkButton>}
+                        title={t('checkout.empty')}
+                        action={<LinkButton href="/products">{t('checkout.continue')}</LinkButton>}
                     />
                 </div>
             </div>
@@ -152,18 +154,18 @@ export default function CheckoutPage() {
 
     return (
         <div className="container-page py-6">
-            <Breadcrumb items={[{ label: 'Giỏ hàng', href: '/cart' }, { label: 'Thanh toán' }]} />
-            <h1 className="mt-3 text-2xl font-extrabold tracking-tight">Thanh toán</h1>
+            <Breadcrumb items={[{ label: t('checkout.cart'), href: '/cart' }, { label: t('checkout.title') }]} />
+            <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{t('checkout.title')}</h1>
 
             <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] [&>*]:min-w-0">
                 <div className="space-y-4">
                     <Step
                         n={1}
-                        title="Địa chỉ nhận hàng"
+                        title={t('checkout.address')}
                         action={
                             addresses.length > 0 && (
                                 <Button size="sm" variant="soft" onClick={() => setModal({ open: true, editing: null })}>
-                                    <Plus className="h-4 w-4" /> Thêm
+                                    <Plus className="h-4 w-4" /> {t('checkout.add')}
                                 </Button>
                             )
                         }
@@ -176,7 +178,7 @@ export default function CheckoutPage() {
                                 className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-brand-200 py-8 text-brand-700 hover:bg-brand-50"
                             >
                                 <MapPin className="h-6 w-6" />
-                                <span className="font-semibold">Thêm địa chỉ giao hàng</span>
+                                <span className="font-semibold">{t('checkout.addNew')}</span>
                             </button>
                         ) : (
                             <div className="grid gap-3 sm:grid-cols-2">
@@ -200,7 +202,7 @@ export default function CheckoutPage() {
                                                 {a.fullName} <span className="font-normal text-muted">· {a.phoneNumber}</span>
                                             </p>
                                             <p className="mt-1 text-muted">{formatAddress(a)}</p>
-                                            {a.isDefault && <span className="mt-2 inline-block rounded-md bg-brand-100 px-1.5 py-0.5 text-[11px] font-semibold text-brand-700">Mặc định</span>}
+                                            {a.isDefault && <span className="mt-2 inline-block rounded-md bg-brand-100 px-1.5 py-0.5 text-[11px] font-semibold text-brand-700">{t('checkout.default')}</span>}
                                         </div>
                                         <button
                                             type="button"
@@ -208,8 +210,8 @@ export default function CheckoutPage() {
                                                 e.preventDefault();
                                                 setModal({ open: true, editing: a });
                                             }}
-                                            className="absolute right-3 top-3 rounded-full p-1.5 text-muted hover:bg-white hover:text-brand-600"
-                                            aria-label="Sửa địa chỉ"
+                                            className="absolute right-3 top-3 rounded-full p-1.5 text-muted hover:bg-surface hover:text-brand-600"
+                                            aria-label={t('checkout.editAddress')}
                                         >
                                             <Pencil className="h-3.5 w-3.5" />
                                         </button>
@@ -219,45 +221,45 @@ export default function CheckoutPage() {
                         )}
                     </Step>
 
-                    <Step n={2} title="Vận chuyển">
+                    <Step n={2} title={t('checkout.shipping')}>
                         <div className="flex items-center gap-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 p-4">
                             <Truck className="h-6 w-6 text-brand-600" />
                             <div className="flex-1 text-sm">
-                                <p className="font-semibold">Giao hàng tiêu chuẩn</p>
+                                <p className="font-semibold">{t('checkout.standard')}</p>
                                 <p className="text-muted">
-                                    {address ? `Dự kiến ${quote?.estimatedDays || '3-5 ngày'} đến ${address.province}` : 'Chọn địa chỉ để xem phí và thời gian giao'}
+                                    {address ? t('checkout.eta', { d: quote?.estimatedDays || t('checkout.days35'), p: address.province }) : t('checkout.pickAddress')}
                                 </p>
                             </div>
-                            <p className="font-bold">{!address || !quote ? '—' : quote.freeShipping ? <span className="text-brand-600">Miễn phí</span> : formatVND(quote.fee)}</p>
+                            <p className="font-bold">{!address || !quote ? '—' : quote.freeShipping ? <span className="text-brand-600">{t('checkout.free')}</span> : formatVND(quote.fee)}</p>
                         </div>
                     </Step>
 
-                    <Step n={3} title="Phương thức thanh toán">
+                    <Step n={3} title={t('checkout.payment')}>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <label className="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-brand-500 bg-brand-50/50 p-4">
                                 <input type="radio" name="pay" defaultChecked className="h-4 w-4 accent-brand-500" />
                                 <Banknote className="h-6 w-6 text-brand-600" />
                                 <div className="text-sm">
-                                    <p className="font-semibold">Thanh toán khi nhận hàng</p>
-                                    <p className="text-muted">COD — trả tiền mặt cho shipper</p>
+                                    <p className="font-semibold">{t('checkout.cod')}</p>
+                                    <p className="text-muted">{t('checkout.codDesc')}</p>
                                 </div>
                             </label>
                             <div className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-line p-4 opacity-60" aria-disabled>
                                 <CreditCard className="h-6 w-6 text-muted" />
                                 <div className="text-sm">
-                                    <p className="font-semibold">VNPay / Thẻ ngân hàng</p>
-                                    <p className="text-muted">Sắp ra mắt</p>
+                                    <p className="font-semibold">{t('checkout.vnpay')}</p>
+                                    <p className="text-muted">{t('checkout.soon')}</p>
                                 </div>
                             </div>
                         </div>
                         <label className="mt-4 block">
-                            <span className="mb-1.5 block text-sm font-medium">Ghi chú cho shop (không bắt buộc)</span>
+                            <span className="mb-1.5 block text-sm font-medium">{t('checkout.note')}</span>
                             <textarea
                                 className="input min-h-20 resize-y"
                                 maxLength={500}
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
-                                placeholder="VD: Giao giờ hành chính, gọi trước khi giao…"
+                                placeholder={t('checkout.notePlaceholder')}
                             />
                         </label>
                     </Step>
@@ -266,9 +268,9 @@ export default function CheckoutPage() {
                 <aside className="lg:sticky lg:top-36 lg:self-start">
                     <div className="card space-y-5 p-5">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-bold">Đơn hàng ({items.reduce((n, i) => n + i.quantity, 0)})</h2>
-                            <Link href="/cart" className="text-sm font-semibold text-brand-600 hover:underline">
-                                Sửa
+                            <h2 className="text-lg font-bold">{t('checkout.order', { n: items.reduce((n, i) => n + i.quantity, 0) })}</h2>
+                            <Link href="/cart" className="px-1 py-1 text-sm font-semibold text-brand-600 hover:underline">
+                                {t('checkout.edit')}
                             </Link>
                         </div>
                         <ul className="max-h-72 space-y-3 overflow-y-auto pr-1">
@@ -277,7 +279,7 @@ export default function CheckoutPage() {
                                     <div className="relative h-16 w-16 shrink-0">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={it.image || PLACEHOLDER_IMAGE} alt="" className="h-full w-full rounded-xl object-cover" />
-                                        <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-[10px] font-bold text-white">
+                                        <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-night px-1 text-[10px] font-bold text-white">
                                             {it.quantity}
                                         </span>
                                     </div>
@@ -296,30 +298,30 @@ export default function CheckoutPage() {
 
                         <dl className="space-y-2.5 border-t border-line pt-4 text-sm">
                             <div className="flex justify-between">
-                                <dt className="text-muted">Tạm tính</dt>
+                                <dt className="text-muted">{t('checkout.subtotal')}</dt>
                                 <dd className="font-semibold">{formatVND(subtotal)}</dd>
                             </div>
                             {discount > 0 && (
                                 <div className="flex justify-between text-brand-700">
-                                    <dt>Giảm giá ({voucher?.code})</dt>
+                                    <dt>{t('checkout.discount', { code: voucher?.code ?? '' })}</dt>
                                     <dd className="font-semibold">-{formatVND(discount)}</dd>
                                 </div>
                             )}
                             <div className="flex justify-between">
-                                <dt className="text-muted">Phí vận chuyển</dt>
-                                <dd className="font-semibold">{!address ? '—' : quote?.freeShipping ? 'Miễn phí' : formatVND(shipping)}</dd>
+                                <dt className="text-muted">{t('checkout.shippingFee')}</dt>
+                                <dd className="font-semibold">{!address ? '—' : quote?.freeShipping ? t('checkout.free') : formatVND(shipping)}</dd>
                             </div>
                             <div className="flex items-baseline justify-between border-t border-line pt-3">
-                                <dt className="font-bold">Tổng thanh toán</dt>
+                                <dt className="font-bold">{t('checkout.total')}</dt>
                                 <dd className="text-2xl font-extrabold text-coral-500">{formatVND(total)}</dd>
                             </div>
                         </dl>
 
                         <Button size="lg" variant="coral" className="w-full" onClick={placeOrder} loading={placing}>
-                            Đặt hàng
+                            {t('checkout.place')}
                         </Button>
                         <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted">
-                            <Lock className="h-3.5 w-3.5" /> Giá, phí ship và giảm giá được hệ thống kiểm tra lại khi đặt hàng
+                            <Lock className="h-3.5 w-3.5" /> {t('checkout.verified')}
                         </p>
                     </div>
                 </aside>

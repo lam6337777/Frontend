@@ -1,11 +1,15 @@
+'use client';
+
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useT } from '@/lib/i18n/client';
 
 /** Hiển thị số sao (hỗ trợ nửa sao bằng cách cắt chiều rộng lớp sao màu) */
 export function Rating({ value, size = 14, className }: { value: number; size?: number; className?: string }) {
+    const t = useT();
     const pct = Math.max(0, Math.min(5, value || 0)) / 5 * 100;
     return (
-        <span className={cn('relative inline-flex', className)} aria-label={`${(value || 0).toFixed(1)} trên 5 sao`}>
+        <span className={cn('relative inline-flex', className)} aria-label={t('common.ratingOf', { v: (value || 0).toFixed(1) })}>
             <span className="flex text-line">
                 {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} width={size} height={size} fill="currentColor" strokeWidth={0} />
@@ -22,15 +26,16 @@ export function Rating({ value, size = 14, className }: { value: number; size?: 
 
 /** Chọn số sao (dùng trong form đánh giá) */
 export function RatingInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+    const t = useT();
     return (
-        <div className="flex gap-1" role="radiogroup" aria-label="Chọn số sao">
+        <div className="flex gap-1" role="radiogroup" aria-label={t('common.pickStars')}>
             {[1, 2, 3, 4, 5].map((n) => (
                 <button
                     key={n}
                     type="button"
                     role="radio"
                     aria-checked={value === n}
-                    aria-label={`${n} sao`}
+                    aria-label={t('common.ratingOf', { v: n })}
                     onClick={() => onChange(n)}
                     className="transition-transform hover:scale-110"
                 >
